@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Noxss Gallery</title>
+
+    <!-- BIBLIOTECAS DE TERCEIROS -->
+    <script defer src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- BIBLIOTECA NOXSS -->
+    <link rel="stylesheet" href="noxss/dist/noxss.css" />
+
+    <!-- ESTILOS CUSTOMIZADOS DO APP -->
+    <style>
+        :root {
+            /* Personalizando a paleta Noxss para um visual mais "artístico" */
+            --noxss-accent-primary: #ec4899;
+            --noxss-accent-primary-hover: #db2777;
+            --noxss-accent-primary-rgb: 236, 72, 153;
+            --noxss-bg-main: #141414;
+            --noxss-bg-surface: #1e1e1e;
+            --noxss-bg-elements: #2a2a2a;
+            --noxss-border-color: #383838;
+        }
+        [data-theme="light"] {
+            --noxss-accent-primary: #d946ef;
+            --noxss-accent-primary-hover: #c026d3;
+            --noxss-accent-primary-rgb: 217, 70, 239;
+            --noxss-bg-main: #f5f5f5;
+            --noxss-bg-surface: #ffffff;
+            --noxss-bg-elements: #f0f0f0;
+            --noxss-text-primary: #212121;
+            --noxss-text-secondary: #757575;
+            --noxss-border-color: #e0e0e0;
+        }
+
+        /* Layout de Grid para os Cards de Foto */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        /* Estilo do Card de Foto */
+        .photo-card .noxss-card__media {
+            position: relative;
+            padding-top: 100%; /* Proporção quadrada */
+            background-color: var(--noxss-bg-elements);
+            cursor: pointer;
+        }
+        .photo-card .noxss-card__media img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-card .noxss-card__footer {
+            display: flex;
+            justify-content: flex-end; /* Alinha os botões à direita */
+            gap: 0.5rem;
+        }
+
+        /* Estilo do Modal */
+        .noxss-modal__media-container {
+            width: 100%;
+            height: 70vh; /* Ocupa 70% da altura da viewport */
+            background-color: var(--noxss-bg-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .noxss-modal__media-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        #modal-tags {
+            font-size: 0.9rem;
+            color: var(--noxss-text-secondary);
+        }
+    </style>
+</head>
+<body data-noxss-layout="app">
+
+    <!-- ESTRUTURA DO APLICATIVO COM NOXSS -->
+    <div class="noxss-layout">
+        <!-- BARRA SUPERIOR -->
+        <nav class="noxss-navbar">
+            <a class="noxss-navbar__brand" href="#"><i data-feather="image" class="noxss-icon"></i> Noxss Gallery</a>
+            <button class="noxss-btn noxss-btn--icon" id="theme-toggle" style="margin-left: auto;"><i data-feather="sun" class="noxss-icon"></i></button>
+        </nav>
+
+        <!-- CONTEÚDO PRINCIPAL COM ABAS -->
+        <main class="noxss-layout__content">
+            <div class="noxss-tabs" data-default-tab="feed">
+                <!-- Abas para Desktop -->
+                <div class="noxss-tabs__header d-none d-md-flex">
+                    <button class="noxss-tabs__header-button" data-tab-id="feed"><i data-feather="rss" class="noxss-icon"></i> Feed</button>
+                    <button class="noxss-tabs__header-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i> Buscar</button>
+                    <button class="noxss-tabs__header-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i> Favoritos</button>
+                </div>
+
+                <!-- Painéis das Abas -->
+                <div class="noxss-tabs__content-area">
+                    <!-- Painel do Feed -->
+                    <div class="noxss-tabs__panel" id="panel-feed">
+                        <div id="feed-container" class="photo-grid"></div>
+                        <div id="loading-feed" class="text-center my-3" style="display: none;"><div class="noxss-spinner"></div></div>
+                        <div class="text-center p-3"><button id="load-more-feed" class="noxss-btn noxss-btn--secondary">Carregar Mais</button></div>
+                    </div>
+
+                    <!-- Painel de Busca -->
+                    <div class="noxss-tabs__panel" id="panel-search">
+                        <form id="search-form" class="p-3">
+                            <div class="noxss-input-group">
+                                <input type="text" id="search-input" class="noxss-input" placeholder="Buscar por tags (ex: fantasy sci-fi)...">
+                                <button type="submit" class="noxss-btn noxss-btn--primary"><i data-feather="search" class="noxss-icon"></i></button>
+                            </div>
+                        </form>
+                        <div id="search-results" class="photo-grid"></div>
+                        <div id="loading-search" class="text-center my-3" style="display: none;"><div class="noxss-spinner"></div></div>
+                    </div>
+
+                    <!-- Painel de Favoritos -->
+                    <div class="noxss-tabs__panel" id="panel-favorites">
+                        <div id="favorites-container" class="photo-grid"></div>
+                        <div id="no-favorites-message" class="text-center p-5" style="display: none;">
+                            <i data-feather="heart" class="noxss-icon" style="width:48px; height:48px; color:var(--noxss-border-color);"></i>
+                            <p class="mt-3 text-secondary">Você ainda não favoritou nenhuma imagem.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- BARRA INFERIOR PARA MOBILE -->
+        <nav class="noxss-navbar noxss-navbar--bottom d-md-none">
+            <button class="noxss-tabs__nav-button" data-tab-id="feed"><i data-feather="rss" class="noxss-icon"></i></button>
+            <button class="noxss-tabs__nav-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i></button>
+            <button class="noxss-tabs__nav-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i></button>
+        </nav>
+    </div>
+
+    <!-- MODAL PARA VISUALIZAÇÃO DA FOTO -->
+    <div class="noxss-modal" id="photo-modal" data-noxss-modal>
+        <div class="noxss-modal__dialog noxss-modal__dialog--large">
+            <div class="noxss-modal__header">
+                <h3 class="noxss-modal__title">Detalhes da Imagem</h3>
+                <button class="noxss-btn noxss-btn--icon noxss-modal__close-btn" data-noxss-modal-close><i data-feather="x" class="noxss-icon"></i></button>
+            </div>
+            <div class="noxss-modal__body" style="padding:0;">
+                <div class="noxss-modal__media-container"></div>
+            </div>
+            <div class="noxss-modal__footer" style="justify-content: space-between;">
+                <p id="modal-tags" class="noxss-text-truncate"></p>
+                <div class="d-flex" style="gap: 8px;">
+                    <button class="noxss-btn noxss-btn--secondary modal-action-btn" id="modal-download-btn"><i data-feather="download" class="noxss-icon"></i></button>
+                    <button class="noxss-btn noxss-btn--secondary modal-action-btn" id="modal-share-btn"><i data-feather="share-2" class="noxss-icon"></i></button>
+                    <button class="noxss-btn noxss-btn--primary modal-action-btn" id="modal-favorite-btn"><i data-feather="heart" class="noxss-icon"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SCRIPTS -->
+    <script src="noxss/js/core.js"></script>
+    <script src="noxss/js/components/tabs.js"></script>
+    <script src="noxss/js/components/modals.js"></script>
+    <script src="noxss/js/components/toasts.js"></script>
+
+    <!-- SCRIPT PRINCIPAL DO APLICATIVO -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. ESTADO E VARIÁVEIS GLOBAIS ---
+            let allPhotos = [];
+            let favorites = JSON.parse(localStorage.getItem('photoFavorites_v1')) || [];
+            let feedPage = 0;
+            const photosPerPage = 12;
+
+            // --- 2. SELETORES DE ELEMENTOS DO DOM ---
+            const feedContainer = document.getElementById('feed-container');
+            const searchResultsContainer = document.getElementById('search-results');
+            const favoritesContainer = document.getElementById('favorites-container');
+            const noFavoritesMessage = document.getElementById('no-favorites-message');
+            const loadMoreBtn = document.getElementById('load-more-feed');
+            const searchForm = document.getElementById('search-form');
+            const searchInput = document.getElementById('search-input');
+            const loadingFeed = document.getElementById('loading-feed');
+            const loadingSearch = document.getElementById('loading-search');
+            
+            const modal = document.getElementById('photo-modal');
+            const modalMediaContainer = modal.querySelector('.noxss-modal__media-container');
+            const modalTags = document.getElementById('modal-tags');
+            const modalDownloadBtn = document.getElementById('modal-download-btn');
+            const modalShareBtn = document.getElementById('modal-share-btn');
+            const modalFavoriteBtn = document.getElementById('modal-favorite-btn');
+            const themeToggleBtn = document.getElementById('theme-toggle');
+
+            // --- 3. FUNÇÕES DE RENDERIZAÇÃO E LÓGICA ---
+            
+            /** Renderiza um card de foto no container especificado. */
+            const renderPhotoCard = (photo, container) => {
+                const isFavorite = favorites.some(fav => fav.id === photo.id);
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+                card.innerHTML = `
+                    <div class="noxss-card noxss-card--interactive">
+                        <div class="noxss-card__media">
+                            <img src="fotos/${photo.filename}" alt="${photo.tags.join(', ')}" loading="lazy">
+                        </div>
+                        <div class="noxss-card__footer">
+                            <button class="noxss-btn noxss-btn--icon favorite-btn ${isFavorite ? 'active' : ''}" data-id="${photo.id}" title="Favoritar">
+                                <i data-feather="heart" class="noxss-icon"></i>
+                            </button>
+                        </div>
+                    </div>`;
+                
+                // Adiciona o listener de clique na imagem para abrir o modal
+                card.querySelector('.noxss-card__media').addEventListener('click', () => openPhotoModal(photo));
+                container.appendChild(card);
+            };
+
+            /** Carrega e exibe os posts do feed com paginação. */
+            const loadFeed = (page) => {
+                loadingFeed.style.display = 'block';
+                const start = page * photosPerPage;
+                const end = start + photosPerPage;
+                const photosToLoad = allPhotos.slice(start, end);
+
+                setTimeout(() => { // Simula um delay de rede
+                    photosToLoad.forEach(photo => renderPhotoCard(photo, feedContainer));
+                    loadingFeed.style.display = 'none';
+                    if (end >= allPhotos.length) {
+                        loadMoreBtn.style.display = 'none';
+                    }
+                }, 500);
+            };
+
+            /** Atualiza a exibição da aba de favoritos. */
+            const updateFavoritesUI = () => {
+                favoritesContainer.innerHTML = '';
+                if (favorites.length > 0) {
+                    noFavoritesMessage.style.display = 'none';
+                    favorites.forEach(photo => renderPhotoCard(photo, favoritesContainer));
+                } else {
+                    noFavoritesMessage.style.display = 'block';
+                }
+                feather.replace();
+            };
+
+            /** Abre o modal com os detalhes de uma foto específica. */
+            const openPhotoModal = (photo) => {
+                const isVideo = photo.filename.endsWith('.mp4');
+                modalMediaContainer.innerHTML = isVideo
+                    ? `<video src="fotos/${photo.filename}" class="noxss-modal__media-content" controls autoplay loop></video>`
+                    : `<img src="fotos/${photo.filename}" class="noxss-modal__media-content" alt="${photo.tags.join(', ')}">`;
+                
+                modalTags.textContent = `Tags: ${photo.tags.join(', ')}`;
+                
+                // Configura os botões de ação do modal
+                modalDownloadBtn.onclick = () => window.open(`fotos/${photo.filename}`, '_blank');
+                modalShareBtn.onclick = () => {
+                    if (navigator.share) {
+                        navigator.share({ title: 'Olha essa imagem!', url: window.location.href })
+                                 .catch(err => console.error('Erro ao compartilhar:', err));
+                    } else {
+                        Noxss.Toasts.show({message: 'API de compartilhamento não suportada.', status: 'warning'});
+                    }
+                };
+
+                const isFavorite = favorites.some(fav => fav.id === photo.id);
+                modalFavoriteBtn.classList.toggle('active', isFavorite);
+                modalFavoriteBtn.onclick = () => toggleFavorite(photo.id, photo);
+
+                Noxss.Modals.open('photo-modal');
+            };
+
+            /** Adiciona ou remove uma foto dos favoritos. */
+            const toggleFavorite = (photoId, photoData) => {
+                const favIndex = favorites.findIndex(fav => fav.id === photoId);
+                if (favIndex > -1) {
+                    favorites.splice(favIndex, 1); // Remove
+                } else {
+                    favorites.push(photoData); // Adiciona
+                }
+                localStorage.setItem('photoFavorites_v1', JSON.stringify(favorites));
+                
+                // Atualiza todos os botões de coração (no feed, na busca, no modal, etc.)
+                document.querySelectorAll(`.favorite-btn[data-id="${photoId}"]`).forEach(btn => {
+                    btn.classList.toggle('active', favIndex === -1);
+                });
+                updateFavoritesUI(); // Re-renderiza a aba de favoritos
+            };
+
+            // --- 4. INICIALIZAÇÃO E EVENTOS ---
+
+            /** Inicializa o seletor de tema. */
+            const initTheme = () => {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.dataset.theme = savedTheme;
+                themeToggleBtn.querySelector('i').setAttribute('data-feather', savedTheme === 'light' ? 'moon' : 'sun');
+                
+                themeToggleBtn.addEventListener('click', () => {
+                    let newTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+                    document.documentElement.dataset.theme = newTheme;
+                    localStorage.setItem('theme', newTheme);
+                    themeToggleBtn.querySelector('i').setAttribute('data-feather', newTheme === 'light' ? 'moon' : 'sun');
+                    feather.replace();
+                });
+            };
+
+            // Função principal de inicialização
+            const init = async () => {
+                initTheme();
+                
+                try {
+                    const response = await fetch('fotos.json');
+                    allPhotos = await response.json();
+                    
+                    loadFeed(feedPage);
+                    updateFavoritesUI();
+                    feather.replace();
+
+                } catch (error) {
+                    console.error("Erro ao carregar fotos.json:", error);
+                    feedContainer.innerHTML = '<p class="text-danger">Não foi possível carregar as imagens.</p>';
+                }
+
+                // Event Listeners
+                loadMoreBtn.addEventListener('click', () => {
+                    feedPage++;
+                    loadFeed(feedPage);
+                });
+
+                searchForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const query = searchInput.value.trim().toLowerCase().split(' ');
+                    if (!query[0]) return;
+                    
+                    loadingSearch.style.display = 'block';
+                    searchResultsContainer.innerHTML = '';
+                    
+                    setTimeout(() => { // Simula busca
+                        const results = allPhotos.filter(photo => 
+                            query.every(tag => photo.tags.join(' ').toLowerCase().includes(tag))
+                        );
+                        
+                        if(results.length > 0) {
+                           results.forEach(photo => renderPhotoCard(photo, searchResultsContainer));
+                        } else {
+                           searchResultsContainer.innerHTML = `<p class="text-secondary text-center p-4">Nenhum resultado para "${query.join(' ')}".</p>`;
+                        }
+                        loadingSearch.style.display = 'none';
+                        feather.replace();
+                    }, 500);
+                });
+
+                document.body.addEventListener('click', e => {
+                    const favoriteBtn = e.target.closest('.favorite-btn');
+                    if(favoriteBtn) {
+                        const photoId = favoriteBtn.dataset.id;
+                        const photo = allPhotos.find(p => p.id === photoId) || favorites.find(f => f.id === photoId);
+                        if(photo) toggleFavorite(photoId, photo);
+                    }
+                });
+
+                // Adiciona listener para a aba de favoritos ser atualizada sempre que for exibida
+                const tabSystem = document.querySelector('.noxss-tabs');
+                tabSystem.addEventListener('noxss:tab:change', (event) => {
+                    if(event.detail.activeTabId === 'favorites') {
+                        updateFavoritesUI();
+                    }
+                });
+            };
+
+            init();
+        });
+    </script>
+</body>
+</html>

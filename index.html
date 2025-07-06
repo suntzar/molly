@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="pt-br" data-theme="dark">
+    <!-- Tema Dark é o padrão da Noxss -->
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Galeria Noxss</title>
+
+        <!-- Dependências de Terceiros (Ícones) -->
+        <script defer src="https://unpkg.com/feather-icons"></script>
+
+        <!-- Biblioteca Noxss (CSS) -->
+        <link rel="stylesheet" href="noxss/dist/noxss.css" />
+
+        <!-- Estilos específicos para este aplicativo -->
+        <style>
+            .photo-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .noxss-modal__body--fullscreen {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0; /* Remove padding para a imagem preencher */
+            }
+            #fullscreen-photo {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+            }
+            .noxss-modal__header--fullscreen {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+                border-bottom: none;
+            }
+            .modal-actions {
+                margin-left: auto;
+                display: flex;
+                gap: 0.5rem;
+            }
+            /* Estilo para o ícone de coração preenchido */
+            .noxss-btn .feather.is-favorite {
+                fill: var(--noxss-color-danger);
+                color: var(--noxss-color-danger);
+            }
+            .empty-state {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                text-align: center;
+                color: var(--noxss-text-secondary);
+            }
+            .empty-state .noxss-icon {
+                width: 4rem;
+                height: 4rem;
+                margin-bottom: 1rem;
+                stroke-width: 1;
+            }
+        </style>
+    </head>
+    <body data-noxss-layout="app">
+        <div class="noxss-layout">
+            <!-- Barra de Navegação Superior -->
+            <nav class="noxss-navbar">
+                <a class="noxss-navbar__brand" href="#"><i data-feather="image" class="noxss-icon"></i> <span>Galeria Noxss</span></a>
+            </nav>
+
+            <!-- Conteúdo Principal com Abas -->
+            <main class="noxss-layout__content">
+                <div class="noxss-tabs" data-default-tab="feed">
+                    <div class="noxss-tabs__header">
+                        <button class="noxss-tabs__header-button" data-tab-id="feed"><i data-feather="grid" class="noxss-icon"></i> Feed</button>
+                        <button class="noxss-tabs__header-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i> Favoritas</button>
+                        <button class="noxss-tabs__header-button" data-tab-id="settings"><i data-feather="settings" class="noxss-icon"></i> Ajustes</button>
+                    </div>
+
+                    <div class="noxss-tabs__content-area">
+                        <!-- Painel do Feed -->
+                        <div class="noxss-tabs__panel" id="panel-feed" data-fab-visible data-fab-icon="upload-cloud" data-fab-target="#upload-modal">
+                            <div class="photo-grid" id="feed-grid"></div>
+                        </div>
+
+                        <!-- Painel de Favoritas -->
+                        <div class="noxss-tabs__panel" id="panel-favorites">
+                            <div class="photo-grid" id="favorites-grid"></div>
+                        </div>
+
+                        <!-- Painel de Ajustes -->
+                        <div class="noxss-tabs__panel" id="panel-settings" style="padding: 2rem">
+                            <h4><i data-feather="sliders" class="noxss-icon"></i> Ajustes da Galeria</h4>
+                            <div class="noxss-form-group">
+                                <label for="themeSelect" class="noxss-label">Tema Visual</label>
+                                <select class="noxss-select" id="themeSelect">
+                                    <option value="dark">Escuro</option>
+                                    <option value="light">Claro</option>
+                                </select>
+                            </div>
+                            <button id="clear-favorites-btn" class="noxss-btn noxss-btn--danger">
+                                <i data-feather="trash-2" class="noxss-icon"></i>
+                                <span>Limpar Favoritos</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Navegação Inferior para Mobile -->
+            <nav class="noxss-navbar noxss-navbar--bottom">
+                <button class="noxss-tabs__nav-button" data-tab-id="feed"><i data-feather="grid" class="noxss-icon"></i></button>
+                <button class="noxss-tabs__nav-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i></button>
+                <button class="noxss-tabs__nav-button" data-tab-id="settings"><i data-feather="settings" class="noxss-icon"></i></button>
+            </nav>
+        </div>
+
+        <!-- FAB (Botão de Ação Flutuante) -->
+        <button class="noxss-fab is-hidden" aria-label="Fazer Upload"></button>
+
+        <!-- Modal para visualização em tela cheia -->
+        <div class="noxss-modal noxss-modal--fullscreen" id="photo-modal" data-noxss-modal>
+            <div class="noxss-modal__dialog">
+                <div class="noxss-modal__header noxss-modal__header--fullscreen">
+                    <h3 class="noxss-modal__title" id="photo-modal-title"></h3>
+                    <div class="modal-actions">
+                        <button class="noxss-btn noxss-btn--icon" id="favorite-btn" title="Favoritar"><i data-feather="heart" class="noxss-icon"></i></button>
+                        <button class="noxss-btn noxss-btn--icon" id="share-btn" title="Compartilhar"><i data-feather="share-2" class="noxss-icon"></i></button>
+                        <a href="#" class="noxss-btn noxss-btn--icon" id="download-btn" download title="Baixar"><i data-feather="download" class="noxss-icon"></i></a>
+                        <button class="noxss-btn noxss-btn--icon" data-noxss-modal-close title="Fechar"><i data-feather="x" class="noxss-icon"></i></button>
+                    </div>
+                </div>
+                <div class="noxss-modal__body noxss-modal__body--fullscreen">
+                    <img src="" alt="" id="fullscreen-photo" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal de Upload (Simulação) -->
+        <div class="noxss-modal" id="upload-modal" data-noxss-modal>
+            <div class="noxss-modal__dialog">
+                <div class="noxss-modal__header">
+                    <h3 class="noxss-modal__title">Fazer Upload</h3>
+                    <button class="noxss-btn noxss-btn--icon" data-noxss-modal-close><i data-feather="x" class="noxss-icon"></i></button>
+                </div>
+                <div class="noxss-modal__body">
+                    <p>Esta é uma simulação de upload. Em um app real, aqui haveria um campo para selecionar arquivos.</p>
+                    <button class="noxss-btn noxss-btn--primary" style="width: 100%;"><i data-feather="file" class="noxss-icon"></i> Selecionar Arquivos</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts da Biblioteca Noxss -->
+        <script src="noxss/js/core.js"></script>
+        <script src="noxss/js/components/tabs.js"></script>
+        <script src="noxss/js/components/modals.js"></script>
+        <script src="noxss/js/components/toasts.js"></script>
+        <script src="noxss/js/components/fab.js"></script>
+
+        <!-- Script Principal do Aplicativo -->
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const state = {
+                    photos: [],
+                    favorites: new Set(JSON.parse(localStorage.getItem("photoFavorites")) || []),
+                };
+
+                const ui = {
+                    feedGrid: document.getElementById("feed-grid"),
+                    favoritesGrid: document.getElementById("favorites-grid"),
+                    photoModal: {
+                        img: document.getElementById("fullscreen-photo"),
+                        title: document.getElementById("photo-modal-title"),
+                        downloadBtn: document.getElementById("download-btn"),
+                        shareBtn: document.getElementById("share-btn"),
+                        favoriteBtn: document.getElementById("favorite-btn"),
+                    },
+                    themeSelect: document.getElementById("themeSelect"),
+                    clearFavoritesBtn: document.getElementById("clear-favorites-btn"),
+                };
+
+                const renderPhotoCard = (filename) => `
+                    <div class="noxss-card noxss-card--media-top noxss-card--interactive" data-filename="${filename}" role="button" tabindex="0">
+                        <img src="fotos/${filename}" class="noxss-card__media" alt="Foto: ${filename}" loading="lazy">
+                    </div>`;
+
+                const renderGrid = (gridElement, photoList) => {
+                    if (photoList.length === 0) {
+                        gridElement.innerHTML = `<div class="empty-state">
+                            <i class="noxss-icon" data-feather="camera-off"></i>
+                            <p>Nenhuma foto encontrada.</p>
+                        </div>`;
+                    } else {
+                        gridElement.innerHTML = photoList.map(renderPhotoCard).join("");
+                    }
+                    feather.replace();
+                };
+
+                const renderAll = () => {
+                    renderGrid(ui.feedGrid, state.photos);
+                    const favoritePhotos = state.photos.filter(p => state.favorites.has(p));
+                    renderGrid(ui.favoritesGrid, favoritePhotos);
+                };
+
+                const openPhotoModal = (filename) => {
+                    ui.photoModal.img.src = `fotos/${filename}`;
+                    ui.photoModal.title.textContent = filename;
+                    ui.photoModal.downloadBtn.href = `fotos/${filename}`;
+                    
+                    const isFav = state.favorites.has(filename);
+                    const heartIcon = ui.photoModal.favoriteBtn.querySelector('.feather');
+                    heartIcon.classList.toggle('is-favorite', isFav);
+
+                    ui.photoModal.favoriteBtn.dataset.filename = filename;
+                    ui.photoModal.shareBtn.dataset.filename = filename;
+
+                    feather.replace();
+                    Noxss.Modals.open("photo-modal");
+                };
+
+                const toggleFavorite = (filename) => {
+                    if (state.favorites.has(filename)) {
+                        state.favorites.delete(filename);
+                        Noxss.Toasts.show({ message: "Removido dos favoritos", status: "info" });
+                    } else {
+                        state.favorites.add(filename);
+                        Noxss.Toasts.show({ message: "Adicionado aos favoritos!", status: "success" });
+                    }
+                    localStorage.setItem("photoFavorites", JSON.stringify(Array.from(state.favorites)));
+                    renderAll();
+                    
+                    const heartIcon = ui.photoModal.favoriteBtn.querySelector('.feather');
+                    heartIcon.classList.toggle('is-favorite', state.favorites.has(filename));
+                    feather.replace();
+                };
+
+                const sharePhoto = async (filename) => {
+                    const shareUrl = `${window.location.origin}/fotos/${filename}`;
+                    try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        Noxss.Toasts.show({ message: "Link da imagem copiado!", status: "info" });
+                    } catch (err) {
+                        console.error("Falha ao copiar:", err);
+                        Noxss.Toasts.show({ message: "Não foi possível copiar o link.", status: "danger" });
+                    }
+                };
+                
+                // Event Delegation para cliques nos grids
+                document.body.addEventListener('click', (e) => {
+                    const card = e.target.closest('.noxss-card[data-filename]');
+                    if (card) openPhotoModal(card.dataset.filename);
+                });
+
+                // Event Listeners dos botões do Modal
+                ui.photoModal.favoriteBtn.addEventListener('click', (e) => toggleFavorite(e.currentTarget.dataset.filename));
+                ui.photoModal.shareBtn.addEventListener('click', (e) => sharePhoto(e.currentTarget.dataset.filename));
+
+                // Event Listeners dos Ajustes
+                ui.themeSelect.value = document.documentElement.dataset.theme || "dark";
+                ui.themeSelect.addEventListener('change', (e) => {
+                    document.documentElement.dataset.theme = e.target.value;
+                });
+                
+                ui.clearFavoritesBtn.addEventListener('click', () => {
+                    if (confirm("Tem certeza que deseja limpar todos os favoritos?")) {
+                        localStorage.removeItem("photoFavorites");
+                        state.favorites.clear();
+                        renderAll();
+                        Noxss.Toasts.show({ message: "Favoritos limpos.", status: "info" });
+                    }
+                });
+
+                // Inicialização do App
+                async function init() {
+                    try {
+                        const response = await fetch('fotos.json');
+                        state.photos = await response.json();
+                        renderAll();
+                    } catch (error) {
+                        console.error("Não foi possível carregar fotos.json:", error);
+                        ui.feedGrid.innerHTML = `<div class="empty-state">
+                            <i class="noxss-icon" data-feather="alert-triangle"></i>
+                            <p>Erro ao carregar o catálogo de fotos.</p>
+                            <small>Execute 'node loc-ft.js' para gerar o arquivo.</small>
+                        </div>`;
+                    }
+                    feather.replace();
+                }
+
+                init();
+            });
+        </script>
+    </body>
+</html>
