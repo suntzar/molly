@@ -1,67 +1,54 @@
-// generate-media-json.js (Versão 2.0 - Suporta Fotos e Vídeos)
+// build-media.js (Versão 2.1)
+// Gera um JSON com objetos para cada foto e vídeo.
 
 const fs = require('fs');
 const path = require('path');
 
-const fotosDir = path.join(__dirname, 'Fotos');
-const videosDir = path.join(__dirname, 'Videos');
-const outputJsonPath = path.join(__dirname, 'media.json');
+const fotosDir = path.join(__dirname, 'fotos');
+const videosDir = path.join(__dirname, 'videos');
+const outputJsonPath = path.join(__dirname, 'midia.json');
 
 const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-const videoExtensions = ['.mp4', '.webm', '.mov', '.ogv'];
+const videoExtensions = ['.mp4', '.webm', '.mov', '.ogg'];
 
-// Tags de exemplo para uma busca mais interessante
-const sampleTags = ['fantasy', 'sci-fi', 'nature', 'city', 'abstract', 'dark', 'light', 'portrait', 'landscape', 'cyberpunk'];
+const sampleDescriptions = ["Uma paisagem deslumbrante.", "Retrato urbano.", "Detalhes da natureza.", "Arquitetura moderna.", "Momento espontâneo.", "Beleza serena."];
+const sampleVideoTitles = ["Aventura na Cidade", "Paz na Montanha", "Clipe Dinâmico", "Curta Experimental", "Vlog do Dia", "Registro de Viagem"];
 
-function getFilesFromDir(dir, extensions) {
-    if (!fs.existsSync(dir)) {
-        console.warn(`Diretório não encontrado, pulando: ${dir}`);
-        return [];
-    }
-    return fs.readdirSync(dir).filter(file => extensions.includes(path.extname(file).toLowerCase()));
+function getRandomDate() {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 365);
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).toISOString().split('T')[0];
 }
 
 try {
-    const imageFiles = getFilesFromDir(fotosDir, imageExtensions).map(file => ({
-        filename: file,
-        type: 'image'
-    }));
+    const photoFiles = fs.readdirSync(fotosDir)
+        .filter(file => imageExtensions.includes(path.extname(file).toLowerCase()))
+        .map((file, index) => ({
+            type: 'photo',
+            filename: file,
+            description: sampleDescriptions[index % sampleDescriptions.length],
+            date: getRandomDate()
+        }));
 
-    const videoFiles = getFilesFromDir(videosDir, videoExtensions).map(file => ({
-        filename: file,
-        type: 'video'
-    }));
+    const videoFiles = fs.readdirSync(videosDir)
+        .filter(file => videoExtensions.includes(path.extname(file).toLowerCase()))
+        .map((file, index) => ({
+            type: 'video',
+            filename: file,
+            title: sampleVideoTitles[index % sampleVideoTitles.length],
+            duration: "00:45", // Duração fictícia
+            date: getRandomDate(),
+            downloadable: index % 2 === 0 // Torna metade dos vídeos baixáveis para o exemplo
+        }));
 
-    let allMedia = [...imageFiles, ...videoFiles];
+    let allMedia = [...photoFiles, ...videoFiles].sort(() => Math.random() - 0.5); 
 
-    // Embaralha o array para um feed mais dinâmico
-    allMedia.sort(() => Math.random() - 0.5);
-
-    // Adiciona dados fictícios após embaralhar para manter a variedade
-    const finalMediaData = allMedia.map((media, index) => {
-        // Gera de 2 a 4 tags aleatórias para cada item
-        const numTags = Math.floor(Math.random() * 3) + 2;
-        const mediaTags = new Set();
-        while(mediaTags.size < numTags) {
-            mediaTags.add(sampleTags[Math.floor(Math.random() * sampleTags.length)]);
-        }
-
-        return {
-            id: `media_${index}_${Date.now()}`, // ID único e robusto
-            ...media,
-            description: `Descrição de exemplo para ${media.filename}`,
-            tags: Array.from(mediaTags),
-            date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        };
-    });
-
-    const jsonContent = JSON.stringify(finalMediaData, null, 2);
-    fs.writeFileSync(outputJsonPath, jsonContent, 'utf8');
-
-    console.log(`Sucesso! 'media.json' foi criado/atualizado com ${finalMediaData.length} itens de mídia.`);
+    fs.writeFileSync(outputJsonPath, JSON.stringify(allMedia, null, 2), 'utf8');
+    console.log(`Sucesso! 'midia.json' foi criado com ${photoFiles.length} fotos e ${videoFiles.length} vídeos.`);
 
 } catch (error) {
-    console.error("Ocorreu um erro ao gerar o arquivo JSON:", error.message);
+    console.error("Erro ao gerar 'midia.json':", error.message);
     if (!fs.existsSync(outputJsonPath)) {
         fs.writeFileSync(outputJsonPath, '[]', 'utf8');
     }
