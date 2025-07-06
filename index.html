@@ -1,299 +1,219 @@
 <!doctype html>
-<html lang="pt-br" data-theme="dark">
-    <!-- Tema Dark é o padrão da Noxss -->
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Galeria Noxss</title>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Noxss Gallery</title>
+    <script defer src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="noxss/dist/noxss.css" />
+    <style>
+        :root {
+            --noxss-accent-primary: #ec4899;
+            --noxss-accent-primary-hover: #db2777;
+            --noxss-accent-primary-rgb: 236, 72, 153;
+            --noxss-bg-main: #141414;
+            --noxss-bg-surface: #1e1e1e;
+            --noxss-bg-elements: #2a2a2a;
+            --noxss-border-color: #383838;
+        }
+        [data-theme="light"] {
+            --noxss-accent-primary: #d946ef;
+            --noxss-accent-primary-hover: #c026d3;
+            --noxss-accent-primary-rgb: 217, 70, 239;
+            --noxss-bg-main: #f5f5f5;
+            --noxss-bg-surface: #ffffff;
+            --noxss-bg-elements: #f0f0f0;
+            --noxss-text-primary: #212121;
+            --noxss-text-secondary: #757575;
+            --noxss-border-color: #e0e0e0;
+        }
+        .d-none { display: none !important; }
+        .d-md-flex { display: none !important; }
+        @media (min-width: 768px) { .d-md-flex { display: flex !important; } .d-md-none { display: none !important; } }
+        .p-3 { padding: 1rem !important; }
+        .my-3 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
+        .text-center { text-align: center; }
+        .text-secondary { color: var(--noxss-text-secondary); }
+        .mt-3 { margin-top: 1rem !important; }
+        .p-5 { padding: 3rem !important; }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding: 1rem; }
+        .photo-list { display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem; }
+        .photo-card .noxss-card__media { position: relative; padding-top: 100%; background-color: var(--noxss-bg-elements); cursor: pointer; }
+        .photo-card .noxss-card__media img, .photo-card .noxss-card__media .video-indicator { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .video-indicator { display: flex; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.3); pointer-events: none; }
+        .video-indicator .noxss-icon { width: 3rem; height: 3rem; color: #fff; opacity: 0.8; }
+        .photo-card .noxss-card__footer { display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .noxss-modal__media-container { width: 100%; height: 70vh; background-color: var(--noxss-bg-main); display: flex; align-items: center; justify-content: center; }
+        .noxss-modal__media-container img, .noxss-modal__media-container video { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #modal-tags { font-size: 0.9rem; color: var(--noxss-text-secondary); }
+        .noxss-btn .feather.is-favorite { fill: var(--noxss-accent-primary); color: var(--noxss-accent-primary); }
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; color: var(--noxss-text-secondary); padding: 1rem; }
+        .empty-state .noxss-icon { width: 4rem; height: 4rem; margin-bottom: 1rem; stroke-width: 1; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1rem 0.5rem; border-bottom: 1px solid var(--noxss-border-color); }
+        .panel-header h4 { margin: 0; border: none; padding: 0; }
+        @keyframes skeleton-loading { 0% { background-color: var(--noxss-bg-elements); } 50% { background-color: var(--noxss-border-color); } 100% { background-color: var(--noxss-bg-elements); } }
+        .skeleton-card { animation: skeleton-loading 1.5s infinite ease-in-out; background-color: var(--noxss-bg-elements); border-radius: var(--noxss-border-radius-base); aspect-ratio: 1 / 1; }
+    </style>
+</head>
+<body data-noxss-layout="app">
 
-        <!-- Dependências de Terceiros (Ícones) -->
-        <script defer src="https://unpkg.com/feather-icons"></script>
-
-        <!-- Biblioteca Noxss (CSS) -->
-        <link rel="stylesheet" href="noxss/dist/noxss.css" />
-
-        <!-- Estilos específicos para este aplicativo -->
-        <style>
-            .photo-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                gap: 1rem;
-                padding: 1rem;
-            }
-            .noxss-modal__body--fullscreen {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0; /* Remove padding para a imagem preencher */
-            }
-            #fullscreen-photo {
-                max-width: 100%;
-                max-height: 100%;
-                object-fit: contain;
-            }
-            .noxss-modal__header--fullscreen {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
-                border-bottom: none;
-            }
-            .modal-actions {
-                margin-left: auto;
-                display: flex;
-                gap: 0.5rem;
-            }
-            /* Estilo para o ícone de coração preenchido */
-            .noxss-btn .feather.is-favorite {
-                fill: var(--noxss-color-danger);
-                color: var(--noxss-color-danger);
-            }
-            .empty-state {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100%;
-                text-align: center;
-                color: var(--noxss-text-secondary);
-            }
-            .empty-state .noxss-icon {
-                width: 4rem;
-                height: 4rem;
-                margin-bottom: 1rem;
-                stroke-width: 1;
-            }
-        </style>
-    </head>
-    <body data-noxss-layout="app">
-        <div class="noxss-layout">
-            <!-- Barra de Navegação Superior -->
-            <nav class="noxss-navbar">
-                <a class="noxss-navbar__brand" href="#"><i data-feather="image" class="noxss-icon"></i> <span>Galeria Noxss</span></a>
-            </nav>
-
-            <!-- Conteúdo Principal com Abas -->
-            <main class="noxss-layout__content">
-                <div class="noxss-tabs" data-default-tab="feed">
-                    <div class="noxss-tabs__header">
-                        <button class="noxss-tabs__header-button" data-tab-id="feed"><i data-feather="grid" class="noxss-icon"></i> Feed</button>
-                        <button class="noxss-tabs__header-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i> Favoritas</button>
-                        <button class="noxss-tabs__header-button" data-tab-id="settings"><i data-feather="settings" class="noxss-icon"></i> Ajustes</button>
-                    </div>
-
-                    <div class="noxss-tabs__content-area">
-                        <!-- Painel do Feed -->
-                        <div class="noxss-tabs__panel" id="panel-feed" data-fab-visible data-fab-icon="upload-cloud" data-fab-target="#upload-modal">
-                            <div class="photo-grid" id="feed-grid"></div>
-                        </div>
-
-                        <!-- Painel de Favoritas -->
-                        <div class="noxss-tabs__panel" id="panel-favorites">
-                            <div class="photo-grid" id="favorites-grid"></div>
-                        </div>
-
-                        <!-- Painel de Ajustes -->
-                        <div class="noxss-tabs__panel" id="panel-settings" style="padding: 2rem">
-                            <h4><i data-feather="sliders" class="noxss-icon"></i> Ajustes da Galeria</h4>
-                            <div class="noxss-form-group">
-                                <label for="themeSelect" class="noxss-label">Tema Visual</label>
-                                <select class="noxss-select" id="themeSelect">
-                                    <option value="dark">Escuro</option>
-                                    <option value="light">Claro</option>
-                                </select>
-                            </div>
-                            <button id="clear-favorites-btn" class="noxss-btn noxss-btn--danger">
-                                <i data-feather="trash-2" class="noxss-icon"></i>
-                                <span>Limpar Favoritos</span>
-                            </button>
-                        </div>
-                    </div>
+    <div class="noxss-layout">
+        <nav class="noxss-navbar">
+            <a class="noxss-navbar__brand" href="#"><i data-feather="image" class="noxss-icon"></i> <span>Noxss Gallery</span></a>
+            <button class="noxss-btn noxss-btn--icon" id="theme-toggle" style="margin-left: auto;" title="Alternar Tema"><i data-feather="sun" class="noxss-icon"></i></button>
+        </nav>
+        <main class="noxss-layout__content">
+            <div class="noxss-tabs" data-default-tab="feed">
+                <div class="noxss-tabs__header d-md-flex">
+                    <button class="noxss-tabs__header-button" data-tab-id="feed"><i data-feather="rss" class="noxss-icon"></i> Feed</button>
+                    <button class="noxss-tabs__header-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i> Buscar</button>
+                    <button class="noxss-tabs__header-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i> Favoritos</button>
                 </div>
-            </main>
-
-            <!-- Navegação Inferior para Mobile -->
-            <nav class="noxss-navbar noxss-navbar--bottom">
-                <button class="noxss-tabs__nav-button" data-tab-id="feed"><i data-feather="grid" class="noxss-icon"></i></button>
-                <button class="noxss-tabs__nav-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i></button>
-                <button class="noxss-tabs__nav-button" data-tab-id="settings"><i data-feather="settings" class="noxss-icon"></i></button>
-            </nav>
-        </div>
-
-        <!-- FAB (Botão de Ação Flutuante) -->
-        <button class="noxss-fab is-hidden" aria-label="Fazer Upload"></button>
-
-        <!-- Modal para visualização em tela cheia -->
-        <div class="noxss-modal noxss-modal--fullscreen" id="photo-modal" data-noxss-modal>
-            <div class="noxss-modal__dialog">
-                <div class="noxss-modal__header noxss-modal__header--fullscreen">
-                    <h3 class="noxss-modal__title" id="photo-modal-title"></h3>
-                    <div class="modal-actions">
-                        <button class="noxss-btn noxss-btn--icon" id="favorite-btn" title="Favoritar"><i data-feather="heart" class="noxss-icon"></i></button>
-                        <button class="noxss-btn noxss-btn--icon" id="share-btn" title="Compartilhar"><i data-feather="share-2" class="noxss-icon"></i></button>
-                        <a href="#" class="noxss-btn noxss-btn--icon" id="download-btn" download title="Baixar"><i data-feather="download" class="noxss-icon"></i></a>
-                        <button class="noxss-btn noxss-btn--icon" data-noxss-modal-close title="Fechar"><i data-feather="x" class="noxss-icon"></i></button>
-                    </div>
-                </div>
-                <div class="noxss-modal__body noxss-modal__body--fullscreen">
-                    <img src="" alt="" id="fullscreen-photo" />
+                <div class="noxss-tabs__content-area">
+                    <section class="noxss-tabs__panel" id="panel-feed">
+                        <div class="panel-header"><h4>Feed de Mídia</h4><div id="feed-layout-toggle" class="layout-toggle"></div></div>
+                        <div id="feed-container"></div>
+                        <div class="text-center p-3"><button id="load-more-btn" class="noxss-btn noxss-btn--secondary" style="display: none;">Carregar Mais</button></div>
+                    </section>
+                    <section class="noxss-tabs__panel" id="panel-search">
+                        <div class="panel-header"><h4>Buscar por Tags</h4></div>
+                        <form id="search-form" class="p-3"><div class="noxss-input-group"><input type="text" id="search-input" class="noxss-input" placeholder="Buscar por tags (ex: fantasy, sci-fi)..."><button type="submit" class="noxss-btn noxss-btn--primary"><i data-feather="search" class="noxss-icon"></i></button></div></form>
+                        <div id="search-results-container"></div>
+                    </section>
+                    <section class="noxss-tabs__panel" id="panel-favorites">
+                        <div class="panel-header"><h4>Minhas Favoritas</h4><div id="favorites-layout-toggle" class="layout-toggle"></div></div>
+                        <div id="favorites-container"></div>
+                    </section>
                 </div>
             </div>
+        </main>
+        <nav class="noxss-navbar noxss-navbar--bottom d-md-none">
+            <button class="noxss-tabs__nav-button" data-tab-id="feed"><i data-feather="rss" class="noxss-icon"></i></button>
+            <button class="noxss-tabs__nav-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i></button>
+            <button class="noxss-tabs__nav-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i></button>
+        </nav>
+    </div>
+    
+    <div class="noxss-modal" id="photo-modal" data-noxss-modal>
+        <div class="noxss-modal__dialog noxss-modal__dialog--large">
+            <div class="noxss-modal__header"><h3 class="noxss-modal__title">Detalhes da Mídia</h3><button class="noxss-btn noxss-btn--icon noxss-modal__close-btn" data-noxss-modal-close><i data-feather="x" class="noxss-icon"></i></button></div>
+            <div class="noxss-modal__body" style="padding:0;"><div class="noxss-modal__media-container"></div></div>
+            <div class="noxss-modal__footer" style="justify-content: space-between;"><p id="modal-tags" class="text-truncate"></p><div class="d-flex" style="gap: 8px;"><button class="noxss-btn noxss-btn--secondary" id="modal-download-btn"><i data-feather="download" class="noxss-icon"></i></button><button class="noxss-btn noxss-btn--secondary" id="modal-share-btn"><i data-feather="share-2" class="noxss-icon"></i></button><button class="noxss-btn noxss-btn--primary" id="modal-favorite-btn"><i data-feather="heart" class="noxss-icon"></i></button></div></div>
         </div>
-        
-        <!-- Modal de Upload (Simulação) -->
-        <div class="noxss-modal" id="upload-modal" data-noxss-modal>
-            <div class="noxss-modal__dialog">
-                <div class="noxss-modal__header">
-                    <h3 class="noxss-modal__title">Fazer Upload</h3>
-                    <button class="noxss-btn noxss-btn--icon" data-noxss-modal-close><i data-feather="x" class="noxss-icon"></i></button>
-                </div>
-                <div class="noxss-modal__body">
-                    <p>Esta é uma simulação de upload. Em um app real, aqui haveria um campo para selecionar arquivos.</p>
-                    <button class="noxss-btn noxss-btn--primary" style="width: 100%;"><i data-feather="file" class="noxss-icon"></i> Selecionar Arquivos</button>
-                </div>
-            </div>
-        </div>
+    </div>
+    
+    <script src="noxss/js/core.js"></script>
+    <script src="noxss/js/components/tabs.js"></script>
+    <script src="noxss/js/components/modals.js"></script>
+    <script src="noxss/js/components/toasts.js"></script>
 
-        <!-- Scripts da Biblioteca Noxss -->
-        <script src="noxss/js/core.js"></script>
-        <script src="noxss/js/components/tabs.js"></script>
-        <script src="noxss/js/components/modals.js"></script>
-        <script src="noxss/js/components/toasts.js"></script>
-        <script src="noxss/js/components/fab.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = { allMedia: [], favorites: new Set(), layout: 'grid', feedPage: 0 };
+            const ui = {
+                feedContainer: document.getElementById('feed-container'),
+                favoritesContainer: document.getElementById('favorites-container'),
+                feedLayoutToggle: document.getElementById('feed-layout-toggle'),
+                favoritesLayoutToggle: document.getElementById('favorites-layout-toggle'),
+                searchResultsContainer: document.getElementById('search-results-container'),
+                searchInput: document.getElementById('search-input'),
+                searchForm: document.getElementById('search-form'),
+                loadMoreBtn: document.getElementById('load-more-btn'),
+                modal: { container: document.getElementById('photo-modal'), mediaContainer: document.querySelector('#photo-modal .noxss-modal__media-container'), tags: document.getElementById('modal-tags'), downloadBtn: document.getElementById('modal-download-btn'), shareBtn: document.getElementById('modal-share-btn'), favoriteBtn: document.getElementById('modal-favorite-btn') },
+                themeToggleBtn: document.getElementById('theme-toggle'),
+            };
 
-        <!-- Script Principal do Aplicativo -->
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const state = {
-                    photos: [],
-                    favorites: new Set(JSON.parse(localStorage.getItem("photoFavorites")) || []),
-                };
+            const renderMediaCard = (media) => `<div class="photo-card" data-id="${media.id}"><div class="noxss-card noxss-card--media-top noxss-card--interactive"><div class="noxss-card__media"><img src="fotos/${media.filename}" alt="${media.description}" loading="lazy">${media.type === 'video' ? '<div class="video-indicator"><i class="noxss-icon" data-feather="play"></i></div>' : ''}</div><div class="noxss-card__footer"><button class="noxss-btn noxss-btn--icon favorite-btn ${state.favorites.has(media.id) ? 'active' : ''}" data-id="${media.id}" title="Favoritar"><i data-feather="heart" class="noxss-icon"></i></button></div></div></div>`;
+            const renderMediaList = (media) => `<div class="noxss-list-item noxss-list-item--interactive" data-id="${media.id}"><div class="noxss-list-item__leading"><img src="fotos/${media.filename}" class="noxss-list-item__avatar" alt="${media.description}" loading="lazy"/></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${media.filename}</div><div class="noxss-list-item__subtitle">${media.description}</div></div><div class="noxss-list-item__trailing"><i class="noxss-icon" data-feather="${media.type === 'video' ? 'video' : 'image'}"></i></div></div>`;
+            const renderContainer = (container, mediaList, layout, empty) => {
+                if (mediaList.length === 0) { container.innerHTML = `<div class="empty-state"><i class="noxss-icon" data-feather="${empty.icon}"></i><p>${empty.message}</p></div>`; return; }
+                const renderFn = layout === 'list' ? renderMediaList : renderMediaCard;
+                container.innerHTML = `<div class="${layout === 'list' ? 'photo-list' : 'photo-grid'}">${mediaList.map(renderFn).join("")}</div>`;
+            };
+            const renderLayoutToggles = () => { ui.feedLayoutToggle.innerHTML = ui.favoritesLayoutToggle.innerHTML = `<button class="noxss-btn noxss-btn--icon ${state.layout === 'grid' ? 'active' : ''}" data-layout="grid" title="Grade"><i class="noxss-icon" data-feather="grid"></i></button><button class="noxss-btn noxss-btn--icon ${state.layout === 'list' ? 'active' : ''}" data-layout="list" title="Lista"><i class="noxss-icon" data-feather="list"></i></button>`; };
+            
+            const renderAll = () => {
+                const favoriteMedia = state.allMedia.filter(p => state.favorites.has(p.id));
+                renderContainer(ui.feedContainer, state.allMedia, state.layout, { icon: 'alert-triangle', message: 'Nenhuma mídia encontrada.' });
+                renderContainer(ui.favoritesContainer, favoriteMedia, state.layout, { icon: 'heart', message: 'Você ainda não favoritou nada.' });
+                renderLayoutToggles();
+                feather.replace();
+            };
 
-                const ui = {
-                    feedGrid: document.getElementById("feed-grid"),
-                    favoritesGrid: document.getElementById("favorites-grid"),
-                    photoModal: {
-                        img: document.getElementById("fullscreen-photo"),
-                        title: document.getElementById("photo-modal-title"),
-                        downloadBtn: document.getElementById("download-btn"),
-                        shareBtn: document.getElementById("share-btn"),
-                        favoriteBtn: document.getElementById("favorite-btn"),
-                    },
-                    themeSelect: document.getElementById("themeSelect"),
-                    clearFavoritesBtn: document.getElementById("clear-favorites-btn"),
-                };
+            const openMediaModal = (media) => {
+                ui.modal.mediaContainer.innerHTML = media.type === 'video' ? `<video src="videos/${media.filename}" controls autoplay loop></video>` : `<img src="fotos/${media.filename}" alt="${media.description}">`;
+                ui.modal.tags.textContent = `Tags: ${media.tags.join(', ')}`;
+                ui.modal.downloadBtn.onclick = () => window.open(`fotos/${media.filename}`, '_blank');
+                ui.modal.shareBtn.onclick = () => shareMedia(media.filename);
+                ui.modal.favoriteBtn.classList.toggle('active', state.favorites.has(media.id));
+                ui.modal.favoriteBtn.onclick = () => toggleFavorite(media);
+                feather.replace();
+                Noxss.Modals.open('photo-modal');
+            };
 
-                const renderPhotoCard = (filename) => `
-                    <div class="noxss-card noxss-card--media-top noxss-card--interactive" data-filename="${filename}" role="button" tabindex="0">
-                        <img src="fotos/${filename}" class="noxss-card__media" alt="Foto: ${filename}" loading="lazy">
-                    </div>`;
-
-                const renderGrid = (gridElement, photoList) => {
-                    if (photoList.length === 0) {
-                        gridElement.innerHTML = `<div class="empty-state">
-                            <i class="noxss-icon" data-feather="camera-off"></i>
-                            <p>Nenhuma foto encontrada.</p>
-                        </div>`;
-                    } else {
-                        gridElement.innerHTML = photoList.map(renderPhotoCard).join("");
-                    }
+            const toggleFavorite = (media) => {
+                state.favorites.has(media.id) ? state.favorites.delete(media.id) : state.favorites.add(media.id);
+                localStorage.setItem('photoFavorites_v2', JSON.stringify(Array.from(state.favorites)));
+                renderAll();
+                ui.modal.favoriteBtn.classList.toggle('active', state.favorites.has(media.id));
+                feather.replace();
+            };
+            
+            const initTheme = () => {
+                const savedTheme = localStorage.getItem('galleryTheme') || 'dark';
+                document.documentElement.dataset.theme = savedTheme;
+                ui.themeToggleBtn.querySelector('i').setAttribute('data-feather', savedTheme === 'light' ? 'moon' : 'sun');
+                ui.themeToggleBtn.addEventListener('click', () => {
+                    const newTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.dataset.theme = newTheme;
+                    localStorage.setItem('galleryTheme', newTheme);
+                    ui.themeToggleBtn.querySelector('i').setAttribute('data-feather', newTheme === 'light' ? 'moon' : 'sun');
                     feather.replace();
-                };
+                });
+            };
 
-                const renderAll = () => {
-                    renderGrid(ui.feedGrid, state.photos);
-                    const favoritePhotos = state.photos.filter(p => state.favorites.has(p));
-                    renderGrid(ui.favoritesGrid, favoritePhotos);
-                };
-
-                const openPhotoModal = (filename) => {
-                    ui.photoModal.img.src = `fotos/${filename}`;
-                    ui.photoModal.title.textContent = filename;
-                    ui.photoModal.downloadBtn.href = `fotos/${filename}`;
-                    
-                    const isFav = state.favorites.has(filename);
-                    const heartIcon = ui.photoModal.favoriteBtn.querySelector('.feather');
-                    heartIcon.classList.toggle('is-favorite', isFav);
-
-                    ui.photoModal.favoriteBtn.dataset.filename = filename;
-                    ui.photoModal.shareBtn.dataset.filename = filename;
-
-                    feather.replace();
-                    Noxss.Modals.open("photo-modal");
-                };
-
-                const toggleFavorite = (filename) => {
-                    if (state.favorites.has(filename)) {
-                        state.favorites.delete(filename);
-                        Noxss.Toasts.show({ message: "Removido dos favoritos", status: "info" });
-                    } else {
-                        state.favorites.add(filename);
-                        Noxss.Toasts.show({ message: "Adicionado aos favoritos!", status: "success" });
-                    }
-                    localStorage.setItem("photoFavorites", JSON.stringify(Array.from(state.favorites)));
+            const init = async () => {
+                initTheme();
+                state.layout = localStorage.getItem('galleryLayout') || 'grid';
+                ui.feedContainer.innerHTML = `<div class="photo-grid">${Array(8).fill('<div class="skeleton-card"></div>').join('')}</div>`;
+                
+                try {
+                    const response = await fetch('media.json');
+                    if (!response.ok) throw new Error('Falha ao buscar media.json');
+                    state.allMedia = await response.json();
+                    state.favorites = new Set(JSON.parse(localStorage.getItem('photoFavorites_v2')) || []);
                     renderAll();
-                    
-                    const heartIcon = ui.photoModal.favoriteBtn.querySelector('.feather');
-                    heartIcon.classList.toggle('is-favorite', state.favorites.has(filename));
-                    feather.replace();
-                };
-
-                const sharePhoto = async (filename) => {
-                    const shareUrl = `${window.location.origin}/fotos/${filename}`;
-                    try {
-                        await navigator.clipboard.writeText(shareUrl);
-                        Noxss.Toasts.show({ message: "Link da imagem copiado!", status: "info" });
-                    } catch (err) {
-                        console.error("Falha ao copiar:", err);
-                        Noxss.Toasts.show({ message: "Não foi possível copiar o link.", status: "danger" });
-                    }
-                };
-                
-                // Event Delegation para cliques nos grids
-                document.body.addEventListener('click', (e) => {
-                    const card = e.target.closest('.noxss-card[data-filename]');
-                    if (card) openPhotoModal(card.dataset.filename);
-                });
-
-                // Event Listeners dos botões do Modal
-                ui.photoModal.favoriteBtn.addEventListener('click', (e) => toggleFavorite(e.currentTarget.dataset.filename));
-                ui.photoModal.shareBtn.addEventListener('click', (e) => sharePhoto(e.currentTarget.dataset.filename));
-
-                // Event Listeners dos Ajustes
-                ui.themeSelect.value = document.documentElement.dataset.theme || "dark";
-                ui.themeSelect.addEventListener('change', (e) => {
-                    document.documentElement.dataset.theme = e.target.value;
-                });
-                
-                ui.clearFavoritesBtn.addEventListener('click', () => {
-                    if (confirm("Tem certeza que deseja limpar todos os favoritos?")) {
-                        localStorage.removeItem("photoFavorites");
-                        state.favorites.clear();
-                        renderAll();
-                        Noxss.Toasts.show({ message: "Favoritos limpos.", status: "info" });
-                    }
-                });
-
-                // Inicialização do App
-                async function init() {
-                    try {
-                        const response = await fetch('fotos.json');
-                        state.photos = await response.json();
-                        renderAll();
-                    } catch (error) {
-                        console.error("Não foi possível carregar fotos.json:", error);
-                        ui.feedGrid.innerHTML = `<div class="empty-state">
-                            <i class="noxss-icon" data-feather="alert-triangle"></i>
-                            <p>Erro ao carregar o catálogo de fotos.</p>
-                            <small>Execute 'node loc-ft.js' para gerar o arquivo.</small>
-                        </div>`;
-                    }
-                    feather.replace();
+                } catch (error) {
+                    console.error(error);
+                    ui.feedContainer.innerHTML = `<div class="empty-state"><i class="noxss-icon" data-feather="alert-triangle"></i><p>Não foi possível carregar o catálogo de mídia.</p><small>Execute 'node generate-media-json.js' na raiz do projeto.</small></div>`;
                 }
+                feather.replace();
+            };
 
-                init();
+            document.body.addEventListener('click', e => {
+                const mediaCard = e.target.closest('[data-id]');
+                if (mediaCard) {
+                    const media = state.allMedia.find(p => p.id === mediaCard.dataset.id);
+                    if(media) openPhotoModal(media);
+                }
+                const layoutBtn = e.target.closest('.layout-toggle .noxss-btn');
+                if(layoutBtn) {
+                    state.layout = layoutBtn.dataset.layout;
+                    localStorage.setItem('galleryLayout', state.layout);
+                    renderAll();
+                }
             });
-        </script>
-    </body>
+
+            ui.searchForm.addEventListener('submit', e => {
+                e.preventDefault();
+                const term = ui.searchInput.value.trim().toLowerCase();
+                const results = term ? state.allMedia.filter(p => p.tags.some(tag => tag.toLowerCase().includes(term))) : [];
+                renderContainer(ui.searchResultsContainer, results, state.layout, { icon: 'search', message: `Nenhum resultado para "${term}"` });
+                feather.replace();
+            });
+
+            init();
+        });
+    </script>
+</body>
 </html>
