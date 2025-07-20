@@ -239,11 +239,11 @@
 
                 const renderers = {
                     grid: {
-                        photo: p => `<div class="noxss-card noxss-card--media-top noxss-card--interactive" data-filename="${p.filename}" data-type="photo"><img src="https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${p.filename}" class="noxss-card__media" loading="lazy"></div>`,
+                        photo: p => `<div class="noxss-card noxss-card--media-top noxss-card--interactive" data-filename="${p.filename}" data-type="photo"><img src="fotos/${p.filename}" class="noxss-card__media" loading="lazy"></div>`,
                         video: v => `<div class="noxss-card noxss-card--interactive" data-filename="${v.filename}" data-type="video"><video class="card-video-thumb" src="https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Videos/${v.filename}#t=0.5" preload="metadata" muted></video></div>`
                     },
                     list: {
-                        photo: p => `<div class="noxss-list-item noxss-list-item--interactive" data-filename="${p.filename}" data-type="photo"><div class="noxss-list-item__leading"><img src="https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${p.filename}" class="noxss-list-item__avatar" loading="lazy"></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${p.filename}</div><div class="noxss-list-item__subtitle">${p.description}</div></div><div class="noxss-list-item__trailing"><small>${p.date}</small></div></div>`,
+                        photo: p => `<div class="noxss-list-item noxss-list-item--interactive" data-filename="${p.filename}" data-type="photo"><div class="noxss-list-item__leading"><img src="fotos/${p.filename}" class="noxss-list-item__avatar" loading="lazy"></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${p.filename}</div><div class="noxss-list-item__subtitle">${p.description}</div></div><div class="noxss-list-item__trailing"><small>${p.date}</small></div></div>`,
                         video: v => `<div class="noxss-list-item noxss-list-item--interactive" data-filename="${v.filename}" data-type="video"><div class="noxss-list-item__leading"><i class="noxss-icon noxss-list-item__icon" data-feather="video"></i></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${v.title}</div><div class="noxss-list-item__subtitle">${v.duration}</div></div><div class="noxss-list-item__trailing"><small>${v.date}</small></div></div>`
                     }
                 };
@@ -418,9 +418,9 @@
                     const isFav = state.favorites.has(filename);
 
                     if (type === "photo") {
-                        ui.photoModal.img.src = `https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${filename}`;
+                        ui.photoModal.img.src = `fotos/${filename}`;
                         ui.photoModal.title.textContent = `${filename} - ${mediaItem.date}`;
-                        ui.photoModal.downloadBtn.href = `https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${filename}`;
+                        ui.photoModal.downloadBtn.href = `fotos/${filename}`;
                         ui.photoModal.favoriteBtn.dataset.filename = filename;
                         ui.photoModal.favoriteBtn.querySelector(".feather").classList.toggle("is-favorite", isFav);
                         Noxss.Modals.open("photo-modal");
