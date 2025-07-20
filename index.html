@@ -1,192 +1,328 @@
 <!doctype html>
 <html lang="pt-br" data-theme="dark">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Galeria de Mídia Noxss</title>
-    <script defer src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="noxss/dist/noxss.css" />
-    <style>
-        :root {
-            --noxss-accent-primary: #e677b4; --noxss-accent-primary-hover: #ff85c6; --noxss-accent-primary-rgb: 230, 119, 180; --noxss-color-danger: #e67777;
-        }
-        .noxss-desktop-nav { display: none; }
-        .noxss-mobile-nav { display: flex; }
-        @media (min-width: 992px) { .noxss-desktop-nav { display: flex; } .noxss-mobile-nav { display: none; } }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Galeria de Mídia Noxss</title>
+        <script defer src="https://unpkg.com/feather-icons"></script>
+        <link rel="stylesheet" href="noxss/dist/noxss.css" />
+        <style>
+            :root {
+                --noxss-accent-primary: #e677b4;
+                --noxss-accent-primary-hover: #ff85c6;
+                --noxss-accent-primary-rgb: 230, 119, 180;
+                --noxss-color-danger: #e67777;
+            }
+            .noxss-desktop-nav {
+                display: none;
+            }
+            .noxss-mobile-nav {
+                display: flex;
+            }
+            @media (min-width: 992px) {
+                .noxss-desktop-nav {
+                    display: flex;
+                }
+                .noxss-mobile-nav {
+                    display: none;
+                }
+            }
 
-        .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 1rem; }
-        .media-list { display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem; }
-        
-        .noxss-card .card-video-thumb {
-            width: 100%; height: 100%; object-fit: cover; pointer-events: none; border-radius: var(--noxss-border-radius-base);
-        }
-        .noxss-card--video .noxss-card__body { display: none; }
+            .media-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .media-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 1rem;
+            }
 
-        .noxss-modal__body--fullscreen { display: flex; align-items: center; justify-content: center; padding: 0; background-color: var(--noxss-bg-main); }
-        #fullscreen-photo, #modal-video-player { max-width: 100%; max-height: 100%; object-fit: contain; }
-        #modal-video-player { width: 100%; height: auto; max-height: 75vh; border-radius: var(--noxss-border-radius-base); background-color: #000; }
-        .noxss-modal__header--fullscreen { position: absolute; top: 0; left: 0; width: 100%; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent); border-bottom: none; }
-        .modal-actions { margin-left: auto; display: flex; gap: 0.5rem; }
-        .noxss-btn .feather.is-favorite { fill: var(--noxss-color-danger); color: var(--noxss-color-danger); }
-        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: calc(100% - 2rem); text-align: center; color: var(--noxss-text-secondary); padding: 1rem; }
-        .empty-state .noxss-icon { width: 4rem; height: 4rem; margin-bottom: 1rem; stroke-width: 1; }
-        .empty-state .noxss-form-group { width: 100%; max-width: 450px; margin-top: 1rem; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1rem 0.5rem; border-bottom: 1px solid var(--noxss-border-color); }
-        .panel-header h4 { margin: 0; border: none; padding: 0; }
-        .panel-content { padding: 1rem; }
-        @keyframes skeleton-loading { 0% { background-color: var(--noxss-bg-elements); } 50% { background-color: var(--noxss-border-color); } 100% { background-color: var(--noxss-bg-elements); } }
-        .skeleton-card { animation: skeleton-loading 1.5s infinite ease-in-out; background-color: var(--noxss-bg-elements); border-radius: var(--noxss-border-radius-base); aspect-ratio: 1 / 1; }
-        .load-trigger { height: 50px; width: 100%; } /* Gatilho para o Intersection Observer */
-    </style>
-</head>
-<body data-noxss-layout="app">
-    <div class="noxss-layout">
-        <nav class="noxss-navbar">
-            <a class="noxss-navbar__brand" href="#"><i data-feather="film" class="noxss-icon"></i> <span>Mídia Noxss</span></a>
-        </nav>
-        <main class="noxss-layout__content">
-            <div class="noxss-tabs" data-default-tab="all">
-                <div class="noxss-tabs__header noxss-desktop-nav">
-                    <button class="noxss-tabs__header-button" data-tab-id="all"><i data-feather="globe" class="noxss-icon"></i> Feed Geral</button>
-                    <button class="noxss-tabs__header-button" data-tab-id="photos"><i data-feather="image" class="noxss-icon"></i> Fotos</button>
-                    <button class="noxss-tabs__header-button" data-tab-id="videos"><i data-feather="video" class="noxss-icon"></i> Vídeos</button>
-                    <button class="noxss-tabs__header-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i> Favoritos</button>
-                    <button class="noxss-tabs__header-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i> Buscar</button>
-                    <button class="noxss-tabs__header-button" data-tab-id="settings"><i data-feather="settings" class="noxss-icon"></i> Ajustes</button>
+            .noxss-card .card-video-thumb {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                pointer-events: none;
+                border-radius: var(--noxss-border-radius-base);
+            }
+            .noxss-card--video .noxss-card__body {
+                display: none;
+            }
+
+            .noxss-modal__body--fullscreen {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                background-color: var(--noxss-bg-main);
+            }
+            #fullscreen-photo,
+            #modal-video-player {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+            }
+            #modal-video-player {
+                width: 100%;
+                height: auto;
+                max-height: 75vh;
+                border-radius: var(--noxss-border-radius-base);
+                background-color: #000;
+            }
+            .noxss-modal__header--fullscreen {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+                border-bottom: none;
+            }
+            .modal-actions {
+                margin-left: auto;
+                display: flex;
+                gap: 0.5rem;
+            }
+            .noxss-btn .feather.is-favorite {
+                fill: var(--noxss-color-danger);
+                color: var(--noxss-color-danger);
+            }
+            .empty-state {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: calc(100% - 2rem);
+                text-align: center;
+                color: var(--noxss-text-secondary);
+                padding: 1rem;
+            }
+            .empty-state .noxss-icon {
+                width: 4rem;
+                height: 4rem;
+                margin-bottom: 1rem;
+                stroke-width: 1;
+            }
+            .empty-state .noxss-form-group {
+                width: 100%;
+                max-width: 450px;
+                margin-top: 1rem;
+            }
+            .panel-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem 1rem 0.5rem;
+                border-bottom: 1px solid var(--noxss-border-color);
+            }
+            .panel-header h4 {
+                margin: 0;
+                border: none;
+                padding: 0;
+            }
+            .panel-content {
+                padding: 1rem;
+            }
+            @keyframes skeleton-loading {
+                0% {
+                    background-color: var(--noxss-bg-elements);
+                }
+                50% {
+                    background-color: var(--noxss-border-color);
+                }
+                100% {
+                    background-color: var(--noxss-bg-elements);
+                }
+            }
+            .skeleton-card {
+                animation: skeleton-loading 1.5s infinite ease-in-out;
+                background-color: var(--noxss-bg-elements);
+                border-radius: var(--noxss-border-radius-base);
+                aspect-ratio: 1 / 1;
+            }
+            .load-trigger {
+                height: 50px;
+                width: 100%;
+            } /* Gatilho para o Intersection Observer */
+        </style>
+    </head>
+    <body data-noxss-layout="app">
+        <div class="noxss-layout">
+            <nav class="noxss-navbar">
+                <a class="noxss-navbar__brand" href="#"><i data-feather="film" class="noxss-icon"></i> <span>Mídia Noxss</span></a>
+            </nav>
+            <main class="noxss-layout__content">
+                <div class="noxss-tabs" data-default-tab="all">
+                    <div class="noxss-tabs__header noxss-desktop-nav">
+                        <button class="noxss-tabs__header-button" data-tab-id="all"><i data-feather="globe" class="noxss-icon"></i> Feed Geral</button>
+                        <button class="noxss-tabs__header-button" data-tab-id="photos"><i data-feather="image" class="noxss-icon"></i> Fotos</button>
+                        <button class="noxss-tabs__header-button" data-tab-id="videos"><i data-feather="video" class="noxss-icon"></i> Vídeos</button>
+                        <button class="noxss-tabs__header-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i> Favoritos</button>
+                        <button class="noxss-tabs__header-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i> Buscar</button>
+                        <button class="noxss-tabs__header-button" data-tab-id="settings"><i data-feather="settings" class="noxss-icon"></i> Ajustes</button>
+                    </div>
+                    <div class="noxss-tabs__content-area">
+                        <section class="noxss-tabs__panel" id="panel-all"></section>
+                        <section class="noxss-tabs__panel" id="panel-photos"></section>
+                        <section class="noxss-tabs__panel" id="panel-videos"></section>
+                        <section class="noxss-tabs__panel" id="panel-favorites"></section>
+                        <section class="noxss-tabs__panel" id="panel-search"></section>
+                        <section class="noxss-tabs__panel" id="panel-settings"></section>
+                    </div>
                 </div>
-                <div class="noxss-tabs__content-area">
-                    <section class="noxss-tabs__panel" id="panel-all"></section>
-                    <section class="noxss-tabs__panel" id="panel-photos"></section>
-                    <section class="noxss-tabs__panel" id="panel-videos"></section>
-                    <section class="noxss-tabs__panel" id="panel-favorites"></section>
-                    <section class="noxss-tabs__panel" id="panel-search"></section>
-                    <section class="noxss-tabs__panel" id="panel-settings"></section>
+            </main>
+            <nav class="noxss-navbar noxss-navbar--bottom noxss-mobile-nav">
+                <button class="noxss-tabs__nav-button" data-tab-id="all"><i data-feather="globe" class="noxss-icon"></i></button>
+                <button class="noxss-tabs__nav-button" data-tab-id="photos"><i data-feather="image" class="noxss-icon"></i></button>
+                <button class="noxss-tabs__nav-button" data-tab-id="videos"><i data-feather="video" class="noxss-icon"></i></button>
+                <button class="noxss-tabs__nav-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i></button>
+                <button class="noxss-tabs__nav-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i></button>
+            </nav>
+        </div>
+
+        <div class="noxss-modal noxss-modal--fullscreen" id="photo-modal" data-noxss-modal>
+            <div class="noxss-modal__dialog">
+                <div class="noxss-modal__header noxss-modal__header--fullscreen">
+                    <h3 class="noxss-modal__title" id="photo-modal-title"></h3>
+                    <div class="modal-actions">
+                        <button class="noxss-btn noxss-btn--icon" id="favorite-photo-btn" title="Favoritar"><i data-feather="heart" class="noxss-icon"></i></button><a href="#" class="noxss-btn noxss-btn--icon" id="download-photo-btn" download title="Baixar"><i data-feather="download" class="noxss-icon"></i></a><button class="noxss-btn noxss-btn--icon" id="fullscreen-btn" title="Tela Cheia"><i data-feather="maximize" class="noxss-icon"></i></button><button class="noxss-btn noxss-btn--icon" data-noxss-modal-close title="Fechar"><i data-feather="x" class="noxss-icon"></i></button>
+                    </div>
+                </div>
+                <div class="noxss-modal__body noxss-modal__body--fullscreen"><img src="" alt="" id="fullscreen-photo" /></div>
+            </div>
+        </div>
+        <div class="noxss-modal" id="video-modal" data-noxss-modal>
+            <div class="noxss-modal__dialog">
+                <div class="noxss-modal__header">
+                    <h3 class="noxss-modal__title" id="video-modal-title"></h3>
+                    <button class="noxss-btn noxss-btn--icon" data-noxss-modal-close><i data-feather="x" class="noxss-icon"></i></button>
+                </div>
+                <div class="noxss-modal__body"><video src="" id="modal-video-player" controls autoplay></video></div>
+                <div class="noxss-modal__footer">
+                    <a href="#" class="noxss-btn noxss-btn--secondary" id="download-video-btn" download><i data-feather="download" class="noxss-icon"></i> Baixar</a><button class="noxss-btn noxss-btn--primary" id="favorite-video-btn"><i data-feather="heart" class="noxss-icon"></i> Favoritar</button>
                 </div>
             </div>
-        </main>
-        <nav class="noxss-navbar noxss-navbar--bottom noxss-mobile-nav">
-            <button class="noxss-tabs__nav-button" data-tab-id="all"><i data-feather="globe" class="noxss-icon"></i></button>
-            <button class="noxss-tabs__nav-button" data-tab-id="photos"><i data-feather="image" class="noxss-icon"></i></button>
-            <button class="noxss-tabs__nav-button" data-tab-id="videos"><i data-feather="video" class="noxss-icon"></i></button>
-            <button class="noxss-tabs__nav-button" data-tab-id="favorites"><i data-feather="heart" class="noxss-icon"></i></button>
-            <button class="noxss-tabs__nav-button" data-tab-id="search"><i data-feather="search" class="noxss-icon"></i></button>
-        </nav>
-    </div>
+        </div>
 
-    <div class="noxss-modal noxss-modal--fullscreen" id="photo-modal" data-noxss-modal><div class="noxss-modal__dialog"><div class="noxss-modal__header noxss-modal__header--fullscreen"><h3 class="noxss-modal__title" id="photo-modal-title"></h3><div class="modal-actions"><button class="noxss-btn noxss-btn--icon" id="favorite-photo-btn" title="Favoritar"><i data-feather="heart" class="noxss-icon"></i></button><a href="#" class="noxss-btn noxss-btn--icon" id="download-photo-btn" download title="Baixar"><i data-feather="download" class="noxss-icon"></i></a><button class="noxss-btn noxss-btn--icon" id="fullscreen-btn" title="Tela Cheia"><i data-feather="maximize" class="noxss-icon"></i></button><button class="noxss-btn noxss-btn--icon" data-noxss-modal-close title="Fechar"><i data-feather="x" class="noxss-icon"></i></button></div></div><div class="noxss-modal__body noxss-modal__body--fullscreen"><img src="" alt="" id="fullscreen-photo" /></div></div></div>
-    <div class="noxss-modal" id="video-modal" data-noxss-modal><div class="noxss-modal__dialog"><div class="noxss-modal__header"><h3 class="noxss-modal__title" id="video-modal-title"></h3><button class="noxss-btn noxss-btn--icon" data-noxss-modal-close><i data-feather="x" class="noxss-icon"></i></button></div><div class="noxss-modal__body"><video src="" id="modal-video-player" controls autoplay></video></div><div class="noxss-modal__footer"><a href="#" class="noxss-btn noxss-btn--secondary" id="download-video-btn" download><i data-feather="download" class="noxss-icon"></i> Baixar</a><button class="noxss-btn noxss-btn--primary" id="favorite-video-btn"><i data-feather="heart" class="noxss-icon"></i> Favoritar</button></div></div></div>
+        <script src="noxss/js/core.js"></script>
+        <script src="noxss/js/components/tabs.js"></script>
+        <script src="noxss/js/components/modals.js"></script>
+        <script src="noxss/js/components/toasts.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const ITEMS_PER_LOAD = 20;
 
-    <script src="noxss/js/core.js"></script><script src="noxss/js/components/tabs.js"></script><script src="noxss/js/components/modals.js"></script><script src="noxss/js/components/toasts.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const ITEMS_PER_LOAD = 20;
-
-            const state = {
-                media: [],
-                favorites: new Set(JSON.parse(localStorage.getItem("mediaFavorites_v3")) || []),
-                layout: localStorage.getItem("mediaLayout") || "grid",
-                theme: localStorage.getItem("appTheme_v3") || "dark",
-                nextIndex: { all: 0, photos: 0, videos: 0, favorites: 0 }
-            };
-
-            const ui = {
-                containers: { all: document.getElementById('panel-all'), photos: document.getElementById('panel-photos'), videos: document.getElementById('panel-videos'), favorites: document.getElementById('panel-favorites'), search: document.getElementById('panel-search'), settings: document.getElementById('panel-settings') },
-                photoModal: { img: document.getElementById('fullscreen-photo'), title: document.getElementById('photo-modal-title'), downloadBtn: document.getElementById('download-photo-btn'), favoriteBtn: document.getElementById('favorite-photo-btn'), fullscreenBtn: document.getElementById('fullscreen-btn') },
-                videoModal: { video: document.getElementById('modal-video-player'), title: document.getElementById('video-modal-title'), favoriteBtn: document.getElementById('favorite-video-btn'), downloadBtn: document.getElementById('download-video-btn') },
-            };
-            
-            const shuffleArray = (array) => {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            };
-
-            const normalizeMediaData = data => Array.isArray(data) ? data.map(item => ({ type: item.type || 'photo', description: 'N/A', date: 'N/A', title: 'N/A', ...item })) : [];
-            
-            const renderers = {
-                grid: {
-                    photo: p => `<div class="noxss-card noxss-card--media-top noxss-card--interactive" data-filename="${p.filename}" data-type="photo"><img src="fotos/${p.filename}" class="noxss-card__media" loading="lazy"></div>`,
-                    video: v => `<div class="noxss-card noxss-card--interactive" data-filename="${v.filename}" data-type="video"><video class="card-video-thumb" src="Videos/${v.filename}#t=0.5" preload="metadata" muted></video></div>`
-                },
-                list: {
-                    photo: p => `<div class="noxss-list-item noxss-list-item--interactive" data-filename="${p.filename}" data-type="photo"><div class="noxss-list-item__leading"><img src="fotos/${p.filename}" class="noxss-list-item__avatar" loading="lazy"></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${p.filename}</div><div class="noxss-list-item__subtitle">${p.description}</div></div><div class="noxss-list-item__trailing"><small>${p.date}</small></div></div>`,
-                    video: v => `<div class="noxss-list-item noxss-list-item--interactive" data-filename="${v.filename}" data-type="video"><div class="noxss-list-item__leading"><i class="noxss-icon noxss-list-item__icon" data-feather="video"></i></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${v.title}</div><div class="noxss-list-item__subtitle">${v.duration}</div></div><div class="noxss-list-item__trailing"><small>${v.date}</small></div></div>`
-                }
-            };
-
-            const renderContainer = (container, mediaList, layout, empty, tabId) => {
-                if (!container) return;
-                const oldTrigger = container.querySelector('.load-trigger');
-                if (oldTrigger) mediaObserver.unobserve(oldTrigger);
-
-                const toggleHTML = `<div class="layout-toggle"><button class="noxss-btn noxss-btn--icon ${layout === 'grid' ? 'active' : ''}" data-layout="grid" title="Grade"><i class="noxss-icon" data-feather="grid"></i></button><button class="noxss-btn noxss-btn--icon ${layout === 'list' ? 'active' : ''}" data-layout="list" title="Lista"><i class="noxss-icon" data-feather="list"></i></button></div>`;
-                container.innerHTML = `<div class="panel-header"><h4>${empty.title}</h4>${toggleHTML}</div>`;
-                
-                if (mediaList.length === 0) {
-                    container.innerHTML += `<div class="empty-state"><i class="noxss-icon" data-feather="${empty.icon}"></i><p>${empty.message}</p></div>`;
-                } else {
-                    const mediaContainer = document.createElement('div');
-                    mediaContainer.className = layout === 'list' ? 'media-list' : 'media-grid';
-                    container.appendChild(mediaContainer);
-                    
-                    const loadTrigger = document.createElement('div');
-                    loadTrigger.className = 'load-trigger';
-                    loadTrigger.dataset.tabId = tabId;
-                    container.appendChild(loadTrigger);
-                    
-                    mediaObserver.observe(loadTrigger);
-                }
-                 feather.replace();
-            };
-            
-            const loadAndAppendMedia = (trigger) => {
-                const tabId = trigger.dataset.tabId;
-                if (!tabId) return;
-
-                const mediaSources = {
-                    all: state.media,
-                    photos: state.media.filter(m => m.type === 'photo'),
-                    videos: state.media.filter(m => m.type === 'video'),
-                    favorites: state.media.filter(m => state.favorites.has(m.filename))
+                const state = {
+                    media: [],
+                    favorites: new Set(JSON.parse(localStorage.getItem("mediaFavorites_v3")) || []),
+                    layout: localStorage.getItem("mediaLayout") || "grid",
+                    theme: localStorage.getItem("appTheme_v3") || "dark",
+                    nextIndex: { all: 0, photos: 0, videos: 0, favorites: 0 }
                 };
-                
-                const mediaList = mediaSources[tabId];
-                const startIndex = state.nextIndex[tabId];
-                const endIndex = startIndex + ITEMS_PER_LOAD;
-                const chunk = mediaList.slice(startIndex, endIndex);
 
-                if (chunk.length === 0) {
-                    mediaObserver.unobserve(trigger);
-                    trigger.remove();
-                    return;
-                }
+                const ui = {
+                    containers: { all: document.getElementById("panel-all"), photos: document.getElementById("panel-photos"), videos: document.getElementById("panel-videos"), favorites: document.getElementById("panel-favorites"), search: document.getElementById("panel-search"), settings: document.getElementById("panel-settings") },
+                    photoModal: { img: document.getElementById("fullscreen-photo"), title: document.getElementById("photo-modal-title"), downloadBtn: document.getElementById("download-photo-btn"), favoriteBtn: document.getElementById("favorite-photo-btn"), fullscreenBtn: document.getElementById("fullscreen-btn") },
+                    videoModal: { video: document.getElementById("modal-video-player"), title: document.getElementById("video-modal-title"), favoriteBtn: document.getElementById("favorite-video-btn"), downloadBtn: document.getElementById("download-video-btn") }
+                };
 
-                const renderFn = state.layout === 'list' ? renderers.list : renderers.grid;
-                const htmlToAppend = chunk.map(item => renderFn[item.type] ? renderFn[item.type](item) : '').join("");
-                
-                const mediaContainer = trigger.previousElementSibling;
-                if (mediaContainer) {
-                    mediaContainer.insertAdjacentHTML('beforeend', htmlToAppend);
-                }
-                
-                state.nextIndex[tabId] = endIndex;
-                feather.replace();
-            };
-
-            const mediaObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        loadAndAppendMedia(entry.target);
+                const shuffleArray = array => {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
                     }
-                });
-            }, { rootMargin: '200px' });
+                };
 
-            const renderSearchPanel = () => {
-                const panel = ui.containers.search;
-                if (!panel) return;
+                const normalizeMediaData = data => (Array.isArray(data) ? data.map(item => ({ type: item.type || "photo", description: "N/A", date: "N/A", title: "N/A", ...item })) : []);
 
-                panel.innerHTML = `
+                const renderers = {
+                    grid: {
+                        photo: p => `<div class="noxss-card noxss-card--media-top noxss-card--interactive" data-filename="${p.filename}" data-type="photo"><img src="https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${p.filename}" class="noxss-card__media" loading="lazy"></div>`,
+                        video: v => `<div class="noxss-card noxss-card--interactive" data-filename="${v.filename}" data-type="video"><video class="card-video-thumb" src="https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Videos/${v.filename}#t=0.5" preload="metadata" muted></video></div>`
+                    },
+                    list: {
+                        photo: p => `<div class="noxss-list-item noxss-list-item--interactive" data-filename="${p.filename}" data-type="photo"><div class="noxss-list-item__leading"><img src="https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${p.filename}" class="noxss-list-item__avatar" loading="lazy"></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${p.filename}</div><div class="noxss-list-item__subtitle">${p.description}</div></div><div class="noxss-list-item__trailing"><small>${p.date}</small></div></div>`,
+                        video: v => `<div class="noxss-list-item noxss-list-item--interactive" data-filename="${v.filename}" data-type="video"><div class="noxss-list-item__leading"><i class="noxss-icon noxss-list-item__icon" data-feather="video"></i></div><div class="noxss-list-item__content"><div class="noxss-list-item__title">${v.title}</div><div class="noxss-list-item__subtitle">${v.duration}</div></div><div class="noxss-list-item__trailing"><small>${v.date}</small></div></div>`
+                    }
+                };
+
+                const renderContainer = (container, mediaList, layout, empty, tabId) => {
+                    if (!container) return;
+                    const oldTrigger = container.querySelector(".load-trigger");
+                    if (oldTrigger) mediaObserver.unobserve(oldTrigger);
+
+                    const toggleHTML = `<div class="layout-toggle"><button class="noxss-btn noxss-btn--icon ${layout === "grid" ? "active" : ""}" data-layout="grid" title="Grade"><i class="noxss-icon" data-feather="grid"></i></button><button class="noxss-btn noxss-btn--icon ${layout === "list" ? "active" : ""}" data-layout="list" title="Lista"><i class="noxss-icon" data-feather="list"></i></button></div>`;
+                    container.innerHTML = `<div class="panel-header"><h4>${empty.title}</h4>${toggleHTML}</div>`;
+
+                    if (mediaList.length === 0) {
+                        container.innerHTML += `<div class="empty-state"><i class="noxss-icon" data-feather="${empty.icon}"></i><p>${empty.message}</p></div>`;
+                    } else {
+                        const mediaContainer = document.createElement("div");
+                        mediaContainer.className = layout === "list" ? "media-list" : "media-grid";
+                        container.appendChild(mediaContainer);
+
+                        const loadTrigger = document.createElement("div");
+                        loadTrigger.className = "load-trigger";
+                        loadTrigger.dataset.tabId = tabId;
+                        container.appendChild(loadTrigger);
+
+                        mediaObserver.observe(loadTrigger);
+                    }
+                    feather.replace();
+                };
+
+                const loadAndAppendMedia = trigger => {
+                    const tabId = trigger.dataset.tabId;
+                    if (!tabId) return;
+
+                    const mediaSources = {
+                        all: state.media,
+                        photos: state.media.filter(m => m.type === "photo"),
+                        videos: state.media.filter(m => m.type === "video"),
+                        favorites: state.media.filter(m => state.favorites.has(m.filename))
+                    };
+
+                    const mediaList = mediaSources[tabId];
+                    const startIndex = state.nextIndex[tabId];
+                    const endIndex = startIndex + ITEMS_PER_LOAD;
+                    const chunk = mediaList.slice(startIndex, endIndex);
+
+                    if (chunk.length === 0) {
+                        mediaObserver.unobserve(trigger);
+                        trigger.remove();
+                        return;
+                    }
+
+                    const renderFn = state.layout === "list" ? renderers.list : renderers.grid;
+                    const htmlToAppend = chunk.map(item => (renderFn[item.type] ? renderFn[item.type](item) : "")).join("");
+
+                    const mediaContainer = trigger.previousElementSibling;
+                    if (mediaContainer) {
+                        mediaContainer.insertAdjacentHTML("beforeend", htmlToAppend);
+                    }
+
+                    state.nextIndex[tabId] = endIndex;
+                    feather.replace();
+                };
+
+                const mediaObserver = new IntersectionObserver(
+                    entries => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                loadAndAppendMedia(entry.target);
+                            }
+                        });
+                    },
+                    { rootMargin: "200px" }
+                );
+
+                const renderSearchPanel = () => {
+                    const panel = ui.containers.search;
+                    if (!panel) return;
+
+                    panel.innerHTML = `
                     <div class="panel-header"><h4><i data-feather="search" class="noxss-icon"></i> Buscar Mídia</h4></div>
                     <div class="panel-content">
                         <div class="noxss-form-group">
@@ -199,150 +335,175 @@
                         </div>
                     </div>`;
 
-                const input = panel.querySelector('#search-input');
-                const resultsContainer = panel.querySelector('#search-results-container');
-                const emptyState = panel.querySelector('#search-empty-state');
+                    const input = panel.querySelector("#search-input");
+                    const resultsContainer = panel.querySelector("#search-results-container");
+                    const emptyState = panel.querySelector("#search-empty-state");
 
-                input.addEventListener('input', e => {
-                    const query = e.target.value.toLowerCase().trim();
-                    if (query.length < 2) {
-                        resultsContainer.innerHTML = '';
-                        emptyState.style.display = 'none';
-                        return;
-                    }
-                    const results = state.media.filter(m => 
-                        m.filename.toLowerCase().includes(query) ||
-                        m.title.toLowerCase().includes(query) ||
-                        m.description.toLowerCase().includes(query)
-                    );
-                    
-                    if (results.length > 0) {
-                        const renderFn = state.layout === 'list' ? renderers.list : renderers.grid;
-                        resultsContainer.className = state.layout === 'list' ? 'media-list' : 'media-grid';
-                        resultsContainer.innerHTML = results.map(item => renderFn[item.type] ? renderFn[item.type](item) : '').join("");
-                        emptyState.style.display = 'none';
-                    } else {
-                        resultsContainer.innerHTML = '';
-                        emptyState.style.display = 'flex';
-                    }
-                    feather.replace();
-                });
-            };
+                    input.addEventListener("input", e => {
+                        const query = e.target.value.toLowerCase().trim();
+                        if (query.length < 2) {
+                            resultsContainer.innerHTML = "";
+                            emptyState.style.display = "none";
+                            return;
+                        }
+                        const results = state.media.filter(m => m.filename.toLowerCase().includes(query) || m.title.toLowerCase().includes(query) || m.description.toLowerCase().includes(query));
 
-            const renderSettingsPanel = () => {
-                const panel = ui.containers.settings;
-                if (!panel) return;
+                        if (results.length > 0) {
+                            const renderFn = state.layout === "list" ? renderers.list : renderers.grid;
+                            resultsContainer.className = state.layout === "list" ? "media-list" : "media-grid";
+                            resultsContainer.innerHTML = results.map(item => (renderFn[item.type] ? renderFn[item.type](item) : "")).join("");
+                            emptyState.style.display = "none";
+                        } else {
+                            resultsContainer.innerHTML = "";
+                            emptyState.style.display = "flex";
+                        }
+                        feather.replace();
+                    });
+                };
 
-                panel.innerHTML = `
+                const renderSettingsPanel = () => {
+                    const panel = ui.containers.settings;
+                    if (!panel) return;
+
+                    panel.innerHTML = `
                     <div class="panel-header"><h4><i data-feather="settings" class="noxss-icon"></i> Ajustes</h4></div>
                     <div class="panel-content">
                         <div class="noxss-form-group">
                             <label for="theme-selector">Tema da Aplicação</label>
                             <select id="theme-selector" class="noxss-form-control">
-                                <option value="dark" ${state.theme === 'dark' ? 'selected' : ''}>Escuro</option>
-                                <option value="light" ${state.theme === 'light' ? 'selected' : ''}>Claro</option>
+                                <option value="dark" ${state.theme === "dark" ? "selected" : ""}>Escuro</option>
+                                <option value="light" ${state.theme === "light" ? "selected" : ""}>Claro</option>
                             </select>
                         </div>
                     </div>`;
-                
-                panel.querySelector('#theme-selector').addEventListener('change', (e) => {
-                    state.theme = e.target.value;
-                    document.documentElement.dataset.theme = state.theme;
-                    localStorage.setItem("appTheme_v3", state.theme);
+
+                    panel.querySelector("#theme-selector").addEventListener("change", e => {
+                        state.theme = e.target.value;
+                        document.documentElement.dataset.theme = state.theme;
+                        localStorage.setItem("appTheme_v3", state.theme);
+                    });
+                    feather.replace();
+                };
+
+                const renderAll = () => {
+                    Object.keys(state.nextIndex).forEach(key => (state.nextIndex[key] = 0));
+
+                    renderContainer(ui.containers.all, state.media, state.layout, { title: "Feed Geral", message: "Nenhuma mídia encontrada.", icon: "slash" }, "all");
+                    renderContainer(
+                        ui.containers.photos,
+                        state.media.filter(m => m.type === "photo"),
+                        state.layout,
+                        { title: "Apenas Fotos", message: "Nenhuma foto encontrada.", icon: "camera-off" },
+                        "photos"
+                    );
+                    renderContainer(
+                        ui.containers.videos,
+                        state.media.filter(m => m.type === "video"),
+                        state.layout,
+                        { title: "Apenas Vídeos", message: "Nenhum vídeo encontrado.", icon: "video-off" },
+                        "videos"
+                    );
+                    renderContainer(
+                        ui.containers.favorites,
+                        state.media.filter(m => state.favorites.has(m.filename)),
+                        state.layout,
+                        { title: "Meus Favoritos", message: "Você ainda não favoritou nada.", icon: "heart" },
+                        "favorites"
+                    );
+                };
+
+                const openMediaModal = (filename, type) => {
+                    const mediaItem = state.media.find(m => m.filename === filename);
+                    if (!mediaItem) return;
+                    const isFav = state.favorites.has(filename);
+
+                    if (type === "photo") {
+                        ui.photoModal.img.src = `https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${filename}`;
+                        ui.photoModal.title.textContent = `${filename} - ${mediaItem.date}`;
+                        ui.photoModal.downloadBtn.href = `https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Fotos/${filename}`;
+                        ui.photoModal.favoriteBtn.dataset.filename = filename;
+                        ui.photoModal.favoriteBtn.querySelector(".feather").classList.toggle("is-favorite", isFav);
+                        Noxss.Modals.open("photo-modal");
+                    } else {
+                        ui.videoModal.video.src = `https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Videos/${filename}`;
+                        ui.videoModal.title.textContent = `${mediaItem.title}`;
+                        ui.videoModal.favoriteBtn.dataset.filename = filename;
+                        ui.videoModal.favoriteBtn.querySelector(".feather").classList.toggle("is-favorite", isFav);
+                        ui.videoModal.downloadBtn.href = mediaItem.downloadable ? `https://raw.githubusercontent.com/suntzar/molly/refs/heads/main/Videos/${filename}` : "#";
+                        ui.videoModal.downloadBtn.style.display = mediaItem.downloadable ? "inline-flex" : "none";
+                        Noxss.Modals.open("video-modal");
+                    }
+                    feather.replace();
+                };
+
+                const toggleFavorite = filename => {
+                    const iconInPhotoModal = ui.photoModal.favoriteBtn.querySelector(".feather");
+                    const iconInVideoModal = ui.videoModal.favoriteBtn.querySelector(".feather");
+
+                    if (state.favorites.has(filename)) {
+                        state.favorites.delete(filename);
+                        Noxss.Toasts.show({ message: "Removido dos favoritos.", status: "neutral" });
+                        if (ui.photoModal.favoriteBtn.dataset.filename === filename) iconInPhotoModal.classList.remove("is-favorite");
+                        if (ui.videoModal.favoriteBtn.dataset.filename === filename) iconInVideoModal.classList.remove("is-favorite");
+                    } else {
+                        state.favorites.add(filename);
+                        Noxss.Toasts.show({ message: "Adicionado aos favoritos!", status: "success" });
+                        if (ui.photoModal.favoriteBtn.dataset.filename === filename) iconInPhotoModal.classList.add("is-favorite");
+                        if (ui.videoModal.favoriteBtn.dataset.filename === filename) iconInVideoModal.classList.add("is-favorite");
+                    }
+                    localStorage.setItem("mediaFavorites_v3", JSON.stringify(Array.from(state.favorites)));
+
+                    // Re-renderiza a aba de favoritos para refletir a mudança
+                    renderContainer(
+                        ui.containers.favorites,
+                        state.media.filter(m => state.favorites.has(m.filename)),
+                        state.layout,
+                        { title: "Meus Favoritos", message: "Você ainda não favoritou nada.", icon: "heart" },
+                        "favorites"
+                    );
+                    feather.replace();
+                };
+
+                const init = async () => {
+                    const skeletonHTML = `<div class="media-grid">${Array(12).fill('<div class="skeleton-card"></div>').join("")}</div>`;
+                    Object.values(ui.containers).forEach(c => {
+                        if (c && !["panel-search", "panel-settings"].includes(c.id)) c.innerHTML = skeletonHTML;
+                    });
+
+                    try {
+                        const response = await fetch("midia.json");
+                        if (!response.ok) throw new Error("Falha ao buscar midia.json");
+                        const rawData = await response.json();
+                        state.media = normalizeMediaData(rawData);
+                        shuffleArray(state.media);
+                    } catch (error) {
+                        console.error("Erro ao carregar dados:", error);
+                        Noxss.Toasts.show({ message: "Não foi possível carregar a galeria.", status: "danger" });
+                    } finally {
+                        renderAll();
+                        renderSearchPanel();
+                        renderSettingsPanel();
+                    }
+                };
+
+                document.body.addEventListener("click", e => {
+                    const item = e.target.closest("[data-filename]");
+                    if (item) openMediaModal(item.dataset.filename, item.dataset.type);
+
+                    const layoutBtn = e.target.closest(".layout-toggle .noxss-btn[data-layout]");
+                    if (layoutBtn && layoutBtn.dataset.layout !== state.layout) {
+                        state.layout = layoutBtn.dataset.layout;
+                        localStorage.setItem("mediaLayout", state.layout);
+                        renderAll();
+                    }
                 });
-                feather.replace();
-            };
-            
-            const renderAll = () => {
-                Object.keys(state.nextIndex).forEach(key => state.nextIndex[key] = 0);
 
-                renderContainer(ui.containers.all, state.media, state.layout, { title: "Feed Geral", message: "Nenhuma mídia encontrada.", icon: "slash" }, "all");
-                renderContainer(ui.containers.photos, state.media.filter(m => m.type === 'photo'), state.layout, { title: "Apenas Fotos", message: "Nenhuma foto encontrada.", icon: "camera-off" }, "photos");
-                renderContainer(ui.containers.videos, state.media.filter(m => m.type === 'video'), state.layout, { title: "Apenas Vídeos", message: "Nenhum vídeo encontrado.", icon: "video-off" }, "videos");
-                renderContainer(ui.containers.favorites, state.media.filter(m => state.favorites.has(m.filename)), state.layout, { title: "Meus Favoritos", message: "Você ainda não favoritou nada.", icon: "heart" }, "favorites");
-            };
-            
-            const openMediaModal = (filename, type) => {
-                const mediaItem = state.media.find(m => m.filename === filename);
-                if (!mediaItem) return;
-                const isFav = state.favorites.has(filename);
+                [ui.photoModal.favoriteBtn, ui.videoModal.favoriteBtn].forEach(btn => btn.addEventListener("click", e => toggleFavorite(e.currentTarget.dataset.filename)));
+                ui.photoModal.fullscreenBtn.addEventListener("click", () => ui.photoModal.img.requestFullscreen().catch(err => Noxss.Toasts.show({ message: "Modo tela cheia não suportado.", status: "warning" })));
 
-                if (type === 'photo') {
-                    ui.photoModal.img.src = `fotos/${filename}`; ui.photoModal.title.textContent = `${filename} - ${mediaItem.date}`; ui.photoModal.downloadBtn.href = `fotos/${filename}`;
-                    ui.photoModal.favoriteBtn.dataset.filename = filename;
-                    ui.photoModal.favoriteBtn.querySelector('.feather').classList.toggle('is-favorite', isFav);
-                    Noxss.Modals.open("photo-modal");
-                } else {
-                    ui.videoModal.video.src = `Videos/${filename}`; ui.videoModal.title.textContent = `${mediaItem.title}`;
-                    ui.videoModal.favoriteBtn.dataset.filename = filename;
-                    ui.videoModal.favoriteBtn.querySelector('.feather').classList.toggle('is-favorite', isFav);
-                    ui.videoModal.downloadBtn.href = mediaItem.downloadable ? `Videos/${filename}` : '#';
-                    ui.videoModal.downloadBtn.style.display = mediaItem.downloadable ? 'inline-flex' : 'none';
-                    Noxss.Modals.open("video-modal");
-                }
-                feather.replace();
-            };
-
-            const toggleFavorite = (filename) => {
-                const iconInPhotoModal = ui.photoModal.favoriteBtn.querySelector('.feather');
-                const iconInVideoModal = ui.videoModal.favoriteBtn.querySelector('.feather');
-
-                if (state.favorites.has(filename)) {
-                    state.favorites.delete(filename);
-                    Noxss.Toasts.show({message: "Removido dos favoritos.", status: "neutral"});
-                    if (ui.photoModal.favoriteBtn.dataset.filename === filename) iconInPhotoModal.classList.remove('is-favorite');
-                    if (ui.videoModal.favoriteBtn.dataset.filename === filename) iconInVideoModal.classList.remove('is-favorite');
-                } else {
-                    state.favorites.add(filename);
-                    Noxss.Toasts.show({message: "Adicionado aos favoritos!", status: "success"});
-                    if (ui.photoModal.favoriteBtn.dataset.filename === filename) iconInPhotoModal.classList.add('is-favorite');
-                    if (ui.videoModal.favoriteBtn.dataset.filename === filename) iconInVideoModal.classList.add('is-favorite');
-                }
-                localStorage.setItem("mediaFavorites_v3", JSON.stringify(Array.from(state.favorites)));
-                
-                // Re-renderiza a aba de favoritos para refletir a mudança
-                renderContainer(ui.containers.favorites, state.media.filter(m => state.favorites.has(m.filename)), state.layout, { title: "Meus Favoritos", message: "Você ainda não favoritou nada.", icon: "heart" }, "favorites");
-                feather.replace();
-            };
-
-            const init = async () => {
-                const skeletonHTML = `<div class="media-grid">${Array(12).fill('<div class="skeleton-card"></div>').join('')}</div>`;
-                Object.values(ui.containers).forEach(c => { if(c && !['panel-search', 'panel-settings'].includes(c.id)) c.innerHTML = skeletonHTML; });
-                
-                try {
-                    const response = await fetch('midia.json');
-                    if (!response.ok) throw new Error('Falha ao buscar midia.json');
-                    const rawData = await response.json();
-                    state.media = normalizeMediaData(rawData);
-                    shuffleArray(state.media);
-                } catch (error) {
-                    console.error("Erro ao carregar dados:", error);
-                    Noxss.Toasts.show({message: "Não foi possível carregar a galeria.", status: "danger"});
-                } finally {
-                    renderAll();
-                    renderSearchPanel();
-                    renderSettingsPanel();
-                }
-            };
-            
-            document.body.addEventListener('click', (e) => {
-                const item = e.target.closest('[data-filename]');
-                if (item) openMediaModal(item.dataset.filename, item.dataset.type);
-
-                const layoutBtn = e.target.closest('.layout-toggle .noxss-btn[data-layout]');
-                if(layoutBtn && layoutBtn.dataset.layout !== state.layout) {
-                    state.layout = layoutBtn.dataset.layout;
-                    localStorage.setItem("mediaLayout", state.layout);
-                    renderAll();
-                }
+                document.documentElement.dataset.theme = state.theme;
+                init();
             });
-
-            [ui.photoModal.favoriteBtn, ui.videoModal.favoriteBtn].forEach(btn => btn.addEventListener('click', (e) => toggleFavorite(e.currentTarget.dataset.filename)));
-            ui.photoModal.fullscreenBtn.addEventListener('click', () => ui.photoModal.img.requestFullscreen().catch(err => Noxss.Toasts.show({message: "Modo tela cheia não suportado.", status: "warning"})));
-            
-            document.documentElement.dataset.theme = state.theme;
-            init();
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>
